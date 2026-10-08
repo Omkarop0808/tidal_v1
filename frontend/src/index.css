@@ -3,52 +3,182 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    color-scheme: dark;
+  }
+  
   html, body {
     margin: 0;
     padding: 0;
+    background-color: #050b10;
+    color: #f1f5f9;
   }
+
   body {
     overscroll-behavior: none;
-    background-color: theme('colors.background');
     background-image: 
-      radial-gradient(circle at 15% 50%, theme('colors.primary-container' / 3%), transparent 25%),
-      radial-gradient(circle at 85% 30%, theme('colors.secondary-container' / 3%), transparent 25%);
+      radial-gradient(circle at 10% 20%, rgba(0, 242, 254, 0.05), transparent 45%),
+      radial-gradient(circle at 90% 80%, rgba(56, 189, 248, 0.04), transparent 45%);
     background-attachment: fixed;
   }
-  main > :first-child {
-    margin-top: 0 !important;
-  }
-  main > :last-child {
-    margin-bottom: 0 !important;
+
+  /* Custom browser selection */
+  ::selection {
+    background-color: rgba(0, 242, 254, 0.25);
+    color: #00f2fe;
   }
 }
 
 @layer utilities {
+  /* Tactical Glass Panel */
   .glass-panel {
-    @apply bg-surface-container-low/70 backdrop-blur-xl border border-outline-variant/20 shadow-xl;
+    background-color: rgba(13, 27, 42, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(56, 189, 248, 0.12);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   }
-  .glass-panel-hover {
-    @apply hover:bg-surface-container-low/90 hover:border-outline-variant/40 hover:shadow-2xl transition-all duration-300;
+
+  .glass-panel-interactive {
+    background-color: rgba(13, 27, 42, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(56, 189, 248, 0.12);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
+
+  .glass-panel-interactive:hover {
+    background-color: rgba(19, 37, 55, 0.85);
+    border-color: rgba(0, 242, 254, 0.35);
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45), 0 0 20px -5px rgba(0, 242, 254, 0.15);
+    transform: translateY(-2px);
+  }
+
+  /* Tactical Card */
+  .tactical-card {
+    background: linear-gradient(135deg, rgba(13, 27, 42, 0.8) 0%, rgba(8, 18, 28, 0.9) 100%);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(56, 189, 248, 0.1);
+    position: relative;
+  }
+
+  .tactical-card-hover {
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .tactical-card-hover:hover {
+    border-color: rgba(0, 242, 254, 0.3);
+    box-shadow: 0 10px 30px -10px rgba(0, 242, 254, 0.15);
+  }
+
+  /* Subtle tactical border corners */
+  .corner-bracket {
+    position: relative;
+  }
+  .corner-bracket::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    width: 6px;
+    height: 6px;
+    border-top: 1.5px solid #00f2fe;
+    border-left: 1.5px solid #00f2fe;
+  }
+  .corner-bracket::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    right: -1px;
+    width: 6px;
+    height: 6px;
+    border-bottom: 1.5px solid #00f2fe;
+    border-right: 1.5px solid #00f2fe;
+  }
+
+  /* Text glow */
   .text-glow {
-    text-shadow: 0 0 20px theme('colors.primary-container' / 50%);
+    text-shadow: 0 0 15px rgba(0, 242, 254, 0.5);
   }
-  .map-tiles {
-    filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+  
+  .text-glow-error {
+    text-shadow: 0 0 15px rgba(255, 51, 102, 0.5);
+  }
+
+  /* Leaflet Map Tiles Inversion & Deep Navy Tone */
+  .map-tiles, .dark-map-tiles {
+    filter: invert(100%) hue-rotate(190deg) brightness(80%) contrast(120%) saturate(140%);
+  }
+
+  .leaflet-container {
+    background-color: #050b10 !important;
+    font-family: inherit !important;
+  }
+
+  /* Custom Leaflet Tooltips */
+  .leaflet-tooltip.custom-tooltip {
+    background: rgba(13, 27, 42, 0.9) !important;
+    backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(56, 189, 248, 0.25) !important;
+    color: #f1f5f9 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+    padding: 6px 10px !important;
+  }
+  .leaflet-tooltip.error-tooltip {
+    border-color: rgba(255, 51, 102, 0.5) !important;
+  }
+  .leaflet-tooltip.primary-tooltip {
+    border-color: rgba(0, 242, 254, 0.5) !important;
+  }
+  .leaflet-tooltip.secondary-tooltip {
+    border-color: rgba(56, 189, 248, 0.5) !important;
+  }
+  .leaflet-tooltip-top:before, .leaflet-tooltip-bottom:before, .leaflet-tooltip-left:before, .leaflet-tooltip-right:before {
+    border-top-color: rgba(13, 27, 42, 0.9) !important;
   }
 }
 
+/* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(5, 11, 16, 0.8);
 }
 ::-webkit-scrollbar-thumb {
-  background: theme('colors.surface-container-highest');
+  background: rgba(56, 189, 248, 0.2);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: theme('colors.outline');
+  background: rgba(0, 242, 254, 0.4);
+}
+
+/* Custom range input slider */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(30, 58, 82, 0.5);
+  border-radius: 9999px;
+  height: 6px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #00f2fe;
+  cursor: pointer;
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.8);
+  border: 2px solid #050b10;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 18px rgba(0, 242, 254, 1);
 }

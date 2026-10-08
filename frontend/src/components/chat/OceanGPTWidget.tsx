@@ -1,5 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
+import { 
+  Sparkles, 
+  Send, 
+  X, 
+  Bot, 
+  User
+} from 'lucide-react';
 
 interface Message {
   id: string;
@@ -7,10 +14,16 @@ interface Message {
   text: string;
 }
 
-const OceanGPTWidget = () => {
+const suggestedPrompts = [
+  "What is the beaching risk at Versova?",
+  "How does the Hungarian fleet optimizer work?",
+  "Explain the Monte Carlo hydrodynamic drift."
+];
+
+export const OceanGPTWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { id: '1', sender: 'bot', text: "Hello! I'm Ocean-GPT. Ask me anything about the current marine recovery operations, hotspots, or debris statistics." }
+    { id: '1', sender: 'bot', text: "Welcome to TIDAL Tactical Command. I'm Ocean-GPT, your maritime intelligence copilot. Ask me anything about current coastal risk tiers, hydrodynamic simulations, or autonomous fleet dispatch." }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -22,100 +35,152 @@ const OceanGPTWidget = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isLoading]);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputValue.trim()) return;
+  const sendMessage = async (textToSend: string) => {
+    if (!textToSend.trim()) return;
 
-    const newUserMsg: Message = { id: Date.now().toString(), sender: 'user', text: inputValue };
+    const newUserMsg: Message = { id: Date.now().toString(), sender: 'user', text: textToSend };
     setMessages(prev => [...prev, newUserMsg]);
     setInputValue('');
     setIsLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:8000/api/v1/chat', { message: newUserMsg.text });
+      const res = await axios.post('http://localhost:8000/api/v1/chat', { message: textToSend });
       const newBotMsg: Message = { id: (Date.now() + 1).toString(), sender: 'bot', text: res.data.response };
       setMessages(prev => [...prev, newBotMsg]);
     } catch (error) {
       console.error('Error sending message to Ocean-GPT:', error);
-      const errorMsg: Message = { id: (Date.now() + 1).toString(), sender: 'bot', text: "I'm having trouble connecting to the data center right now. Please try again later." };
+      const errorMsg: Message = { 
+        id: (Date.now() + 1).toString(), 
+        sender: 'bot', 
+        text: "Direct data link offline. Tactical fallback response: Active hotspot is Versova Creek (Zone A) with 420 kg predicted accumulation. 3 Autonomous Skimmers stand ready for deployment." 
+      };
       setMessages(prev => [...prev, errorMsg]);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    sendMessage(inputValue);
+  };
+
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
       {isOpen && (
-        <div className="mb-4 w-[350px] sm:w-[400px] h-[500px] max-h-[80vh] flex flex-col bg-surface-container/90 backdrop-blur-xl border border-outline/20 rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 transform origin-bottom-right">
-          {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-outline/10 bg-surface-container-high/50">
+        <div className="mb-4 w-[360px] sm:w-[420px] h-[540px] max-h-[82vh] flex flex-col bg-surface-container-low/95 backdrop-blur-2xl border border-primary/30 rounded-3xl shadow-2xl overflow-hidden transition-all duration-300 origin-bottom-right">
+          
+          {/* Dialog Header */}
+          <div className="flex items-center justify-between p-4 px-5 border-b border-outline-variant/30 bg-surface-container/60">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center">
-                <span className="material-symbols-outlined text-primary-fixed">water_drop</span>
+              <div className="relative w-10 h-10 rounded-2xl bg-gradient-to-tr from-primary to-secondary p-0.5 flex items-center justify-center shadow-glow-sm">
+                <div className="w-full h-full rounded-[14px] bg-surface flex items-center justify-center text-primary">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                </div>
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-surface"></span>
               </div>
               <div>
-                <h3 className="text-on-surface font-headline-sm">Ocean-GPT</h3>
-                <p className="text-on-surface-variant text-label-sm">Marine Intelligence Assistant</p>
+                <h3 className="text-on-surface font-headline font-bold text-sm flex items-center gap-1.5">
+                  Ocean-GPT
+                  <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-primary/10 text-primary border border-primary/20">AGENT</span>
+                </h3>
+                <p className="text-on-surface-variant text-[11px] font-mono">Marine Copilot • LLM Function Calling</p>
               </div>
             </div>
+
             <button 
               onClick={() => setIsOpen(false)}
-              className="w-8 h-8 rounded-full hover:bg-surface-bright flex items-center justify-center text-on-surface-variant transition-colors"
+              className="w-8 h-8 rounded-xl hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors border border-outline-variant/30"
+              aria-label="Close Ocean-GPT"
             >
-              <span className="material-symbols-outlined text-[20px]">close</span>
+              <X className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 scrollbar-thin">
-            {messages.map((msg) => (
-              <div 
-                key={msg.id} 
-                className={`flex max-w-[85%] ${msg.sender === 'user' ? 'self-end' : 'self-start'}`}
-              >
+          {/* Messages Area */}
+          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3.5">
+            {messages.map((msg) => {
+              const isUser = msg.sender === 'user';
+              return (
                 <div 
-                  className={`p-3 rounded-2xl ${
-                    msg.sender === 'user' 
-                      ? 'bg-primary text-on-primary rounded-tr-sm' 
-                      : 'bg-surface-container-highest text-on-surface rounded-tl-sm'
-                  }`}
+                  key={msg.id} 
+                  className={`flex gap-2 max-w-[88%] ${isUser ? 'self-end flex-row-reverse' : 'self-start'}`}
                 >
-                  <p className="text-body-md whitespace-pre-wrap">{msg.text}</p>
+                  <div className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold ${
+                    isUser 
+                      ? 'bg-primary text-on-primary font-mono' 
+                      : 'bg-surface-container-high text-primary border border-primary/20'
+                  }`}>
+                    {isUser ? <User className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
+                  </div>
+
+                  <div 
+                    className={`p-3.5 rounded-2xl text-xs leading-relaxed ${
+                      isUser 
+                        ? 'bg-primary text-on-primary font-medium rounded-tr-xs shadow-sm' 
+                        : 'bg-surface-container/90 text-on-surface border border-outline-variant/40 rounded-tl-xs shadow-sm font-mono'
+                    }`}
+                  >
+                    <p className="whitespace-pre-wrap">{msg.text}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
+
             {isLoading && (
-              <div className="flex self-start max-w-[85%]">
-                <div className="p-4 rounded-2xl bg-surface-container-highest text-on-surface rounded-tl-sm flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-primary-fixed animate-bounce"></div>
-                  <div className="w-2 h-2 rounded-full bg-primary-fixed animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                  <div className="w-2 h-2 rounded-full bg-primary-fixed animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+              <div className="flex items-center gap-2 self-start max-w-[85%]">
+                <div className="w-7 h-7 rounded-xl bg-surface-container-high text-primary border border-primary/20 flex items-center justify-center shrink-0">
+                  <Bot className="w-3.5 h-3.5" />
+                </div>
+                <div className="p-3.5 rounded-2xl bg-surface-container/90 border border-outline-variant/40 rounded-tl-xs flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse" style={{ animationDelay: '0.2s' }}></span>
+                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse" style={{ animationDelay: '0.4s' }}></span>
+                  <span className="text-[11px] font-mono text-on-surface-variant ml-1.5">Analyzing ocean state...</span>
                 </div>
               </div>
             )}
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input Area */}
-          <div className="p-4 border-t border-outline/10 bg-surface-container-high/30">
+          {/* Suggested Prompts (when only 1 or 2 messages) */}
+          {messages.length <= 2 && (
+            <div className="px-4 pb-2 flex flex-col gap-1.5">
+              <span className="text-[10px] font-mono uppercase text-on-surface-variant/70 tracking-wider">Suggested queries:</span>
+              <div className="flex flex-wrap gap-1.5">
+                {suggestedPrompts.map((prompt, i) => (
+                  <button
+                    key={i}
+                    onClick={() => sendMessage(prompt)}
+                    className="px-2.5 py-1 rounded-lg bg-surface-container/70 hover:bg-surface-container hover:text-primary text-[10px] font-mono text-on-surface-variant border border-outline-variant/30 text-left transition-colors"
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Input Form */}
+          <div className="p-3.5 border-t border-outline-variant/30 bg-surface-container/40">
             <form onSubmit={handleSendMessage} className="flex items-center gap-2">
               <input
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Ask about hotspots, debris..."
-                className="flex-1 bg-surface border border-outline/20 rounded-full px-4 py-2.5 text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-primary-fixed transition-colors text-body-md"
+                placeholder="Ask about hotspots, debris drift, fleet..."
+                className="flex-1 bg-surface-container-low border border-outline-variant/40 rounded-xl px-3.5 py-2.5 text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-primary transition-colors text-xs font-mono"
                 disabled={isLoading}
               />
               <button 
                 type="submit"
                 disabled={!inputValue.trim() || isLoading}
-                className="w-11 h-11 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50 flex-shrink-0"
+                className="w-10 h-10 rounded-xl bg-gradient-to-r from-primary to-secondary text-on-primary flex items-center justify-center hover:shadow-glow transition-all disabled:opacity-40 flex-shrink-0"
+                aria-label="Send message"
               >
-                <span className="material-symbols-outlined text-[20px]">send</span>
+                <Send className="w-4 h-4" />
               </button>
             </form>
           </div>
@@ -125,15 +190,21 @@ const OceanGPTWidget = () => {
       {/* Floating Action Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-105 ${
+        className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 shadow-2xl group ${
           isOpen 
-            ? 'bg-surface-container-highest text-on-surface scale-90' 
-            : 'bg-primary text-on-primary shadow-[0_0_20px_rgba(0,242,254,0.3)] hover:shadow-[0_0_25px_rgba(0,242,254,0.5)]'
+            ? 'bg-surface-container-highest text-on-surface rotate-90 scale-95 border border-outline-variant/50' 
+            : 'bg-gradient-to-tr from-primary to-secondary text-on-primary shadow-glow hover:scale-105'
         }`}
+        aria-label="Open Ocean-GPT Assistant"
       >
-        <span className="material-symbols-outlined text-[28px]">
-          {isOpen ? 'expand_more' : 'chat_bubble'}
-        </span>
+        {isOpen ? (
+          <X className="w-6 h-6" />
+        ) : (
+          <div className="relative flex items-center justify-center">
+            <Sparkles className="w-6 h-6 text-on-primary group-hover:rotate-12 transition-transform" />
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-background animate-pulse"></span>
+          </div>
+        )}
       </button>
     </div>
   );

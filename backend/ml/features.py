@@ -19,10 +19,13 @@ def extract_features(env_data: dict, zone_lat: float, zone_lon: float) -> dict:
     )
     beached_percent = drift_res["beached_percent_final"]
     
+    wind_direction = weather.get('wind_direction_10m', 225)
+    
     return {
         "wind_speed": wind_speed,
-        "precipitation": precipitation,
+        "wind_direction": wind_direction,
         "current_speed": current_speed,
+        "precipitation": precipitation,
         "beached_percent": beached_percent,
         "zone_lat": zone_lat,
         "zone_lon": zone_lon

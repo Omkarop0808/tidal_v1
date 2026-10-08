@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_absolute_error, r2_score
+from sklearn.metrics import mean_absolute_error, r2_score, precision_score, recall_score, f1_score
 
 class BeachingRiskModel:
     def __init__(self, model_path="risk_model.json"):
@@ -27,11 +27,15 @@ class BeachingRiskModel:
         # Handle missing values
         df = df.fillna(0)
         
-        X = df.drop(columns=[target_col, "timestamp", "zone_name"], errors='ignore')
+        # Prevent data leakage: strict chronological sort
+        if "timestamp" in df.columns:
+            df["timestamp"] = pd.to_datetime(df["timestamp"])
+            df = df.sort_values(by="timestamp")
+        
+        X = df.drop(columns=[target_col, "timestamp", "zone_name", "zone_lat", "zone_lon"], errors='ignore')
         y = df[target_col]
 
-        # Chronological split for time series
-        # Assuming df is sorted by timestamp
+        # Chronological split for time series (80/20)
         split_idx = int(len(df) * 0.8)
         X_train, X_val = X.iloc[:split_idx], X.iloc[split_idx:]
         y_train, y_val = y.iloc[:split_idx], y.iloc[split_idx:]
@@ -46,10 +50,31 @@ class BeachingRiskModel:
         mae = mean_absolute_error(y_val, preds)
         r2 = r2_score(y_val, preds)
         
+        # Evaluate Risk Tiers
+        # Critical > 400kg, High > 250kg, Medium <= 250kg
+        def get_tier(kg):
+            if kg > 400: return 2
+            if kg > 250: return 1
+            return 0
+            
+        y_val_tiers = [get_tier(val) for val in y_val]
+        pred_tiers = [get_tier(val) for val in preds]
+        
+        precision = precision_score(y_val_tiers, pred_tiers, average='weighted', zero_division=0)
+        recall = recall_score(y_val_tiers, pred_tiers, average='weighted', zero_division=0)
+        f1 = f1_score(y_val_tiers, pred_tiers, average='weighted', zero_division=0)
+        
         self.model.save_model(self.model_path)
         self.is_trained = True
         
-        return {"mae": mae, "r2": r2, "samples": len(df)}
+        return {
+            "mae": float(mae), 
+            "r2": float(r2), 
+            "precision": float(precision),
+            "recall": float(recall),
+            "f1": float(f1),
+            "samples": len(df)
+        }
 
     def predict(self, features_dict: dict):
         if not self.is_trained:
@@ -59,7 +84,7 @@ class BeachingRiskModel:
         df = pd.DataFrame([features_dict])
         df = df.fillna(0)
         # Drop non-feature columns if present
-        df = df.drop(columns=["timestamp", "zone_name"], errors='ignore')
+        df = df.drop(columns=["timestamp", "zone_name", "zone_lat", "zone_lon"], errors='ignore')
         
         pred = self.model.predict(df)[0]
         return max(0, float(pred))
@@ -69,7 +94,7 @@ class BeachingRiskModel:
             return {"wind_speed": 10.0, "current_speed": 5.0} # Fallback
             
         # To get SHAP values / feature contributions in xgboost
-        df = pd.DataFrame([features_dict]).fillna(0).drop(columns=["timestamp", "zone_name"], errors='ignore')
+        df = pd.DataFrame([features_dict]).fillna(0).drop(columns=["timestamp", "zone_name", "zone_lat", "zone_lon"], errors='ignore')
         booster = self.model.get_booster()
         
         # Predict with pred_contribs=True

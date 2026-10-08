@@ -86,7 +86,11 @@ class DriftEngine:
                 "hour": hour,
                 "lat": float(center_lat),
                 "lon": float(center_lon),
-                "beached_percent": float(np.mean(beached_mask) * 100)
+                "beached_percent": float(np.mean(beached_mask) * 100),
+                "particles": [
+                    {"lat": float(lat), "lon": float(lon), "beached": bool(b)} 
+                    for lat, lon, b in zip(particles_lat, particles_lon, beached_mask)
+                ]
             })
 
         return {
