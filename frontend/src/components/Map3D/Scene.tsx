@@ -8,16 +8,16 @@ import { Suspense } from 'react';
 
 export function Scene() {
   return (
-    <div className="w-full h-full bg-[#03070a] relative select-none">
+    <div className="w-full h-full bg-[#000000] relative select-none">
       <Canvas 
         camera={{ position: [0, 45, 45], fov: 42 }}
         gl={{ antialias: true, alpha: false }}
       >
-        <color attach="background" args={['#03070a']} />
+        <color attach="background" args={['#000000']} />
         
         <ambientLight intensity={0.65} />
         <directionalLight position={[20, 30, 20]} intensity={1.2} />
-        <pointLight position={[-20, 15, -20]} intensity={0.5} color="#00e5ff" />
+        <pointLight position={[-20, 15, -20]} intensity={0.5} color="#ffffff" />
         
         <Suspense fallback={null}>
           {/* Mumbai Coastal Topography Mesh */}
@@ -37,8 +37,8 @@ export function Scene() {
           <Grid 
             args={[120, 120]} 
             position={[0, 0, 0]} 
-            cellColor="#0c1d2e" 
-            sectionColor="#163857" 
+            cellColor="#111111" 
+            sectionColor="#333333" 
             cellThickness={0.5} 
             sectionThickness={1.2} 
             fadeDistance={90} 

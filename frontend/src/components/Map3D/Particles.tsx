@@ -15,12 +15,12 @@ export function Particles({ isBaseline = false }: { isBaseline?: boolean }) {
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const MAX_PARTICLES = 1000;
   
-  // High-contrast color tokens:
-  // Baseline (Unmitigated): Ghost Slate (#64748b) in water -> Coral Alert (#ff3b30) when beached
-  // Mitigated (Intervention): Bioluminescent Cyan (#00e5ff) in water -> Emerald (#10b981) when trapped at boom -> Coral (#ff3b30) if leaked
-  const normalColor = useMemo(() => new THREE.Color(isBaseline ? '#64748b' : '#00e5ff'), [isBaseline]);
-  const beachedColor = useMemo(() => new THREE.Color(isBaseline ? '#ff3b30' : '#ff3b30'), [isBaseline]);
-  const trappedColor = useMemo(() => new THREE.Color('#10b981'), []);
+  // High-contrast color tokens for brutalist aesthetic:
+  // Baseline (Unmitigated): Ghost slate (#333333) -> Dark slate (#525252) when beached
+  // Mitigated (Intervention): White (#ffffff) -> Safety Orange (#ff4d00) when trapped at boom or beached
+  const normalColor = useMemo(() => new THREE.Color(isBaseline ? '#333333' : '#ffffff'), [isBaseline]);
+  const beachedColor = useMemo(() => new THREE.Color(isBaseline ? '#525252' : '#ff4d00'), [isBaseline]);
+  const trappedColor = useMemo(() => new THREE.Color('#ff4d00'), []);
 
   useFrame(({ clock }) => {
     if (!meshRef.current || trajectory.length === 0) return;

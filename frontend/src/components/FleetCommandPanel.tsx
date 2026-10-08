@@ -33,12 +33,12 @@ export const FleetCommandPanel = ({ isOpen, onClose }: FleetCommandPanelProps) =
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 26, stiffness: 220 }}
-            className="fixed top-0 right-0 h-full w-full md:w-[540px] bg-surface-container-low/95 backdrop-blur-2xl border-l border-outline-variant/40 z-[9999] shadow-2xl flex flex-col"
+            className="fixed top-0 right-0 h-full w-full md:w-[540px] bg-[#000000] border-l border-[#142336] z-[9999] flex flex-col"
           >
             {/* Drawer Header */}
-            <div className="p-6 sm:p-8 border-b border-outline-variant/30 flex items-center justify-between bg-surface-container/40">
+            <div className="p-6 sm:p-8 border-b border-[#142336] flex items-center justify-between bg-[#000000]">
               <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center text-primary shadow-glow-sm">
+                <div className="w-10 h-10 bg-primary/10 border border-primary/30 flex items-center justify-center text-primary shadow-glow-sm">
                   <Anchor className="w-5 h-5" />
                 </div>
                 <div className="flex flex-col">
@@ -51,7 +51,7 @@ export const FleetCommandPanel = ({ isOpen, onClose }: FleetCommandPanelProps) =
 
               <button 
                 onClick={onClose} 
-                className="p-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface-variant hover:text-on-surface border border-outline-variant/30"
+                className="p-2.5 bg-[#090E17] hover:bg-[#142336] transition-colors text-on-surface-variant hover:text-on-surface border border-[#142336]"
                 aria-label="Close Fleet Command"
               >
                 <X className="w-5 h-5" />
@@ -74,11 +74,11 @@ export const FleetCommandPanel = ({ isOpen, onClose }: FleetCommandPanelProps) =
                 return (
                   <div 
                     key={unit.id} 
-                    className="p-5 rounded-3xl bg-surface-container/70 border border-outline-variant/40 hover:border-primary/40 transition-all flex flex-col gap-4 group"
+                    className="p-5 bg-[#090E17] border border-[#142336] hover:border-primary/40 transition-all flex flex-col gap-4 group"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
+                        <div className={`w-10 h-10 flex items-center justify-center ${
                           isSkimmer 
                             ? 'bg-primary/10 text-primary border border-primary/30' 
                             : 'bg-secondary/10 text-secondary border border-secondary/30'
@@ -92,7 +92,7 @@ export const FleetCommandPanel = ({ isOpen, onClose }: FleetCommandPanelProps) =
                       </div>
 
                       {/* Battery Chip */}
-                      <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full font-mono text-xs border ${
+                      <div className={`flex items-center gap-1.5 px-3 py-1 font-mono text-xs border ${
                         isBatteryGood 
                           ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
                           : 'bg-warning/10 text-warning border-warning/30'
@@ -103,19 +103,19 @@ export const FleetCommandPanel = ({ isOpen, onClose }: FleetCommandPanelProps) =
                     </div>
                     
                     {/* Status & Position Grid */}
-                    <div className="grid grid-cols-2 gap-3 pt-1 font-mono text-xs">
-                      <div className="p-3 rounded-2xl bg-surface-container-low border border-outline-variant/30 flex flex-col gap-0.5">
+                    <div className="grid grid-cols-2 gap-[1px] bg-[#142336] pt-1 font-mono text-xs">
+                      <div className="p-3 bg-[#000000] flex flex-col gap-0.5">
                         <span className="text-[10px] text-on-surface-variant uppercase">Payload Capacity</span>
                         <span className="text-on-surface font-semibold">{unit.capacity}</span>
                       </div>
                       
-                      <div className="p-3 rounded-2xl bg-surface-container-low border border-outline-variant/30 flex flex-col gap-0.5">
+                      <div className="p-3 bg-[#000000] flex flex-col gap-0.5">
                         <span className="text-[10px] text-on-surface-variant uppercase">Cruising Speed</span>
                         <span className="text-primary font-semibold">{unit.speed}</span>
                       </div>
                     </div>
 
-                    <div className="p-3 rounded-2xl bg-surface-container-low border border-outline-variant/30 flex items-center justify-between text-xs font-mono">
+                    <div className="p-3 bg-[#000000] border border-[#142336] flex items-center justify-between text-xs font-mono">
                       <div className="flex items-center gap-1.5 text-on-surface-variant truncate pr-2">
                         <Navigation className="w-3.5 h-3.5 text-primary shrink-0" />
                         <span className="truncate">{unit.status}</span>
@@ -130,16 +130,18 @@ export const FleetCommandPanel = ({ isOpen, onClose }: FleetCommandPanelProps) =
             </div>
 
             {/* Bottom Actions */}
-            <div className="p-6 border-t border-outline-variant/30 bg-surface-container/40 flex items-center justify-between gap-4">
+            <div className="p-6 border-t border-[#142336] bg-[#000000] flex items-center justify-between gap-4">
               <span className="text-xs font-mono text-on-surface-variant">
                 Mesh Signal: <strong className="text-emerald-400">98.4% (Direct Satellite)</strong>
               </span>
-              <button 
-                onClick={() => alert("Fleet Recall Signal Broadcasted!")}
-                className="px-5 py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-bright text-xs font-mono font-semibold text-on-surface border border-outline-variant/40 transition-colors"
-              >
+                  <motion.button 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => console.log("Fleet Recall Signal Broadcasted!")}
+                    className="px-5 py-2.5 bg-[#090E17] hover:bg-[#142336] text-xs font-mono font-semibold text-on-surface border border-[#142336] transition-all"
+                  >
                 Recall to Port
-              </button>
+              </motion.button>
             </div>
           </motion.div>
         </>

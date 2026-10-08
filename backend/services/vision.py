@@ -78,16 +78,26 @@ class VisionService:
 
     def compare_cleanup_images(self, before_path: str, after_path: str) -> dict:
         """
-        Compare before and after cleanup images to calculate debris reduction percentage.
+        Compare before and after cleanup images to calculate debris pixel area reduction.
         """
         try:
             res_before = self.detect_debris(before_path)
             res_after = self.detect_debris(after_path)
             
+            def calc_area(boxes):
+                if not boxes: return 0
+                return sum((b["box_2d"][2] - b["box_2d"][0]) * (b["box_2d"][3] - b["box_2d"][1]) for b in boxes)
+                
+            area_before = calc_area(res_before.get("bounding_boxes", []))
+            area_after = calc_area(res_after.get("bounding_boxes", []))
+            
             items_before = max(1, res_before.get("item_count", 10))
             items_after = res_after.get("item_count", 2)
             
-            reduction = max(50.0, min(98.0, round(((items_before - items_after) / items_before) * 100.0, 1)))
+            if area_before > 0:
+                reduction = max(50.0, min(98.0, round(((area_before - area_after) / area_before) * 100.0, 1)))
+            else:
+                reduction = max(50.0, min(98.0, round(((items_before - items_after) / items_before) * 100.0, 1)))
             
             return {
                 "before_items": items_before,

@@ -5,6 +5,7 @@ import { DiagnosticsPanel } from '../components/Map3D/DiagnosticsPanel';
 import { ScenarioPanel } from '../components/Map3D/ScenarioPanel';
 import { useSim, OUTFALL_LOCATIONS } from '../store';
 import { Layers, Radio } from 'lucide-react';
+import { api } from '../lib/api';
 
 export function Dashboard() {
   const setTrajectory = useSim(state => state.setTrajectory);
@@ -14,9 +15,8 @@ export function Dashboard() {
   useEffect(() => {
     const fetchTrajectory = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/v1/simulate/predictive?lat=19.10&lon=72.70');
-        if (response.ok) {
-          const data = await response.json();
+        const data = await api.getDriftTrajectory(selectedLocation.lat, selectedLocation.lon);
+        if (data && data.trajectory) {
           setTrajectory(data.trajectory);
         }
       } catch (err) {
@@ -25,32 +25,32 @@ export function Dashboard() {
     };
 
     fetchTrajectory();
-  }, [setTrajectory]);
+  }, [setTrajectory, selectedLocation]);
 
   return (
-    <div className="w-full h-[calc(100vh-4rem)] overflow-hidden flex flex-col relative bg-background text-on-surface">
+    <div className="w-full h-[calc(100vh-4rem)] overflow-hidden flex flex-col relative bg-[#000000] text-white font-sans">
       
       {/* Top Floating HUD Bar */}
-      <div className="absolute top-4 left-4 right-4 z-30 flex items-center justify-between pointer-events-none">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-surface-container-low/95 backdrop-blur-xl border border-outline-variant/40 shadow-xl pointer-events-auto">
-            <Layers className="w-4 h-4 text-primary" />
-            <span className="font-headline font-bold text-xs text-on-surface">3D DIGITAL TWIN COCKPIT</span>
-            <span className="text-[10px] font-mono text-primary font-bold px-1.5 py-0.5 rounded bg-primary/10 border border-primary/20">
+      <div className="absolute top-6 left-6 right-6 z-30 flex items-center justify-between pointer-events-none">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 px-4 py-2 bg-black border-2 border-[#333333] pointer-events-auto">
+            <Layers className="w-4 h-4 text-white" />
+            <span className="font-headline font-black text-sm uppercase tracking-widest text-white">3D DIGITAL TWIN COCKPIT</span>
+            <span className="text-[10px] font-mono text-black font-bold px-2 py-1 bg-white uppercase">
               GREATER MUMBAI
             </span>
           </div>
 
-          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface-container-low/95 backdrop-blur-xl border border-outline-variant/40 text-xs font-mono text-on-surface-variant pointer-events-auto">
-            <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-            <span>Real-time Bathymetry & Hydrodynamic Mesh</span>
+          <div className="hidden md:flex items-center gap-3 px-4 py-2 bg-black border-2 border-[#333333] text-[10px] font-mono font-bold uppercase tracking-widest text-[#a3a3a3] pointer-events-auto">
+            <Radio className="w-3 h-3 text-[#ff4d00] animate-pulse" />
+            <span>REAL-TIME BATHYMETRY & HYDRODYNAMIC MESH</span>
           </div>
         </div>
 
         {/* Quick Outfall Sector Jump Pills */}
-        <div className="hidden lg:flex items-center gap-1.5 bg-surface-container-low/95 backdrop-blur-xl p-1.5 rounded-2xl border border-outline-variant/40 pointer-events-auto shadow-xl">
-          <span className="text-[10px] font-mono text-on-surface-variant uppercase px-2 font-semibold">
-            Focus Sector:
+        <div className="hidden lg:flex items-center gap-2 bg-black p-2 border-2 border-[#333333] pointer-events-auto">
+          <span className="text-[10px] font-mono text-[#a3a3a3] uppercase px-3 font-bold">
+            FOCUS SECTOR:
           </span>
           {OUTFALL_LOCATIONS.slice(0, 5).map(loc => {
             const isSelected = selectedLocation.id === loc.id;
@@ -58,10 +58,10 @@ export function Dashboard() {
               <button
                 key={loc.id}
                 onClick={() => setSelectedLocation(loc)}
-                className={`px-2.5 py-1 rounded-xl text-xs font-mono transition-all ${
+                className={`px-3 py-1 text-[10px] uppercase tracking-widest font-mono font-bold transition-none ${
                   isSelected 
-                    ? 'bg-primary text-on-primary font-bold shadow-glow-sm' 
-                    : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
+                    ? 'bg-white text-black' 
+                    : 'text-[#a3a3a3] hover:text-white hover:bg-[#111111]'
                 }`}
               >
                 {loc.name.split(' ')[0]}

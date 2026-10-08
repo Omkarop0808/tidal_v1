@@ -17,6 +17,10 @@ export function useLiveFeed(url: string) {
         const msg = JSON.parse(event.data);
         if (msg.type === 'ENV_UPDATE') {
           setData(msg.payload);
+        } else if (msg.type === 'CLEANUP_COMPLETED') {
+          // Dispatch custom event for UI components to listen to
+          const customEvent = new CustomEvent('CleanupCompletedEvent', { detail: msg });
+          window.dispatchEvent(customEvent);
         }
       } catch (e) {
         console.error('Error parsing live feed message:', e);

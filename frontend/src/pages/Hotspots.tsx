@@ -1,21 +1,20 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   RotateCw, 
-  Sparkles, 
   ArrowRight, 
-  Recycle, 
-  Compass,
   CheckCircle2,
-  Trash2
+  Trash2,
+  Square
 } from 'lucide-react';
-import HotspotRanking, { MOCK_HOTSPOTS } from '../components/dashboard/HotspotRanking';
-import LiveMap from '../components/dashboard/LiveMap';
-import CleanupOptimization from '../components/dashboard/CleanupOptimization';
+import { HotspotRanking, MOCK_HOTSPOTS } from '../components/dashboard/HotspotRanking';
+import { LiveMap } from '../components/dashboard/LiveMap';
+import { CleanupOptimization } from '../components/dashboard/CleanupOptimization';
 import ComparisonVisual from '../components/dashboard/ComparisonVisual';
 import InterventionSimulator from '../components/dashboard/InterventionSimulator';
-import DispatchPlanModal from '../components/dashboard/DispatchPlanModal';
+import { DispatchPlanModal } from '../components/dashboard/DispatchPlanModal';
 import FieldCleanupModal from '../components/dashboard/FieldCleanupModal';
+import { api } from '../lib/api';
 
 const Hotspots = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,93 +22,109 @@ const Hotspots = () => {
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [selectedZoneIndex, setSelectedZoneIndex] = useState(0);
   const [isFleetDispatched, setIsFleetDispatched] = useState(false);
+  const [assignments, setAssignments] = useState<any[]>([]);
 
-  const handleRecalculate = () => {
+  const handleRecalculate = async () => {
     setIsRecalculating(true);
-    setTimeout(() => {
-      setIsRecalculating(false);
-    }, 1500);
+    await api.getHotspots()
+      .then(hotspots => api.optimizeDispatch(hotspots))
+      .then(res => setAssignments(res || []));
+    setIsRecalculating(false);
   };
+
+  useEffect(() => {
+    api.getHotspots()
+      .then(hotspots => api.optimizeDispatch(hotspots))
+      .then(res => setAssignments(res || []))
+      .catch(() => {});
+  }, []);
 
   const currentBeach = MOCK_HOTSPOTS[selectedZoneIndex] || MOCK_HOTSPOTS[0];
 
   return (
-    <div className="flex flex-col w-full px-4 sm:px-8 lg:px-12 py-8 gap-8 max-w-[1600px] mx-auto">
+    <div className="flex flex-col w-full p-4 md:p-8 gap-10 bg-[#000000] text-white min-h-screen font-sans selection:bg-[#ff4d00] selection:text-white">
       
       {/* Top Header / Intro Section */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2 border-b border-outline-variant/30">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-mono font-medium flex items-center gap-1.5">
-              <Compass className="w-3.5 h-3.5" />
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b-2 border-[#333333]">
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-3">
+            <span className="px-3 py-1 bg-[#ff4d00] text-black text-[10px] font-mono font-bold uppercase tracking-widest flex items-center gap-2">
+              <Square className="w-3 h-3 fill-current" />
               TACTICAL DEPLOYMENT & FIELD OPS
             </span>
-            <span className="text-on-surface-variant font-mono text-xs">
-              // SECTOR 04 — GREATER MUMBAI COASTLINE
+            <span className="text-[#a3a3a3] font-mono text-[10px] uppercase font-bold tracking-widest">
+              // SEC_04 — GREATER MUMBAI COASTLINE
             </span>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-headline font-bold text-on-surface tracking-tight">
-            Hotspots & Autonomous Fleet Operations
+          <h1 className="text-5xl sm:text-7xl font-headline font-black text-white tracking-tighter uppercase leading-[0.9]">
+            HOTSPOTS & <br/> <span className="text-[#ff4d00]">FLEET OPS</span>
           </h1>
-          <p className="text-sm sm:text-base text-on-surface-variant max-w-2xl leading-relaxed">
+          <p className="text-xs font-mono uppercase font-bold tracking-widest text-[#a3a3a3] max-w-2xl leading-relaxed border-l-2 border-[#525252] pl-4 mt-2">
             Transform machine learning forecasts into deterministic intercept missions. Real-time telemetry guides vessel assignment, before/after evidence recording, and central state synchronization.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-4">
           <button 
             onClick={() => setIsCleanupModalOpen(true)}
-            className="px-4 py-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-emerald-400 font-headline font-semibold text-xs sm:text-sm transition-all duration-200 flex items-center gap-2 border border-emerald-500/30 shadow-sm"
+            className="px-6 py-4 bg-[#111111] hover:bg-white hover:text-black text-white font-headline font-bold text-sm uppercase tracking-widest transition-none flex items-center gap-3 border-2 border-[#333333] hover:border-white"
           >
             <Trash2 className="w-4 h-4" />
-            <span>Log Field Sweep ({currentBeach.zone_name.split(' ')[0]})</span>
+            <span>LOG FIELD SWEEP ({currentBeach.zone_name.split(' ')[0]})</span>
           </button>
 
           <button 
             onClick={handleRecalculate}
             disabled={isRecalculating}
-            className="px-4 py-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-headline font-semibold text-xs sm:text-sm transition-all duration-200 flex items-center gap-2 border border-outline-variant/40"
+            className="px-6 py-4 bg-[#111111] hover:bg-[#333333] text-white font-headline font-bold text-sm uppercase tracking-widest transition-none flex items-center gap-3 border-2 border-[#333333]"
           >
-            <RotateCw className={`w-4 h-4 text-primary ${isRecalculating ? 'animate-spin' : ''}`} />
-            <span>{isRecalculating ? 'Syncing...' : 'Recalculate'}</span>
+            <RotateCw className={`w-4 h-4 text-[#ff4d00] ${isRecalculating ? 'animate-spin' : ''}`} />
+            <span>{isRecalculating ? 'SYNCING...' : 'RECALCULATE'}</span>
           </button>
 
           <button 
             onClick={() => setIsModalOpen(true)}
-            className="relative px-6 py-3 rounded-xl bg-gradient-to-r from-primary via-secondary to-primary text-on-primary font-headline font-bold text-xs sm:text-sm hover:shadow-glow transition-all duration-300 flex items-center gap-2 group shadow-lg"
+            className="relative px-6 py-4 bg-[#ff4d00] hover:bg-white text-black font-headline font-black text-sm uppercase tracking-widest transition-none flex items-center gap-3"
           >
-            <span className="absolute -top-2.5 -right-2 px-2 py-0.5 bg-error text-white text-[9px] font-mono font-bold rounded-full shadow-md uppercase tracking-wider">
+            <span className="absolute -top-3 -right-3 px-2 py-1 bg-black text-white border-2 border-white text-[10px] font-mono font-bold uppercase tracking-widest">
               {isFleetDispatched ? 'ACTIVE' : 'AI LIVE'}
             </span>
-            <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform" />
-            <span>{isFleetDispatched ? 'Re-optimize Fleet Plan' : 'Deploy AI Cleanup Plan'}</span>
+            <Square className="w-4 h-4 fill-current" />
+            <span>{isFleetDispatched ? 'RE-OPTIMIZE PLAN' : 'DEPLOY AI PLAN'}</span>
           </button>
         </div>
       </div>
 
       {/* Fleet Dispatched Banner (if active) */}
       {isFleetDispatched && (
-        <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between font-mono text-xs text-emerald-400">
-          <div className="flex items-center gap-2.5">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+        <div className="p-4 bg-white text-black border-2 border-black flex flex-col md:flex-row md:items-center justify-between gap-4 font-mono text-[10px] font-bold uppercase tracking-widest">
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className="w-5 h-5 text-black shrink-0" />
             <span>Fleet Orders Transmitted • 3 Autonomous Skimmers En Route to Coastal Hotspots</span>
           </div>
-          <span className="font-bold text-primary">ETA: 0.8h - 2.4h</span>
+          <span className="bg-black text-white px-3 py-1">ETA: 0.8H - 2.4H</span>
         </div>
       )}
 
-      {/* Main Grid: Left Hotspots Ranking (4), Center Live Map (5), Right Cleanup Optimization (3) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-        <HotspotRanking 
-          selectedZoneIndex={selectedZoneIndex}
-          onSelectZone={setSelectedZoneIndex}
-          isFleetDispatched={isFleetDispatched}
-        />
-        <LiveMap 
-          selectedZoneIndex={selectedZoneIndex}
-          isFleetDispatched={isFleetDispatched}
-        />
-        <CleanupOptimization />
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-[1px] bg-[#333333] border-2 border-[#333333]">
+        {/* We need to pass Brutalist props or the components themselves need to be brutalist. We will update the components next. */}
+        <div className="col-span-1 lg:col-span-4 bg-[#000000]">
+          <HotspotRanking 
+            selectedZoneIndex={selectedZoneIndex}
+            onSelectZone={setSelectedZoneIndex}
+            isFleetDispatched={isFleetDispatched}
+          />
+        </div>
+        <div className="col-span-1 lg:col-span-5 bg-[#000000]">
+          <LiveMap 
+            selectedZoneIndex={selectedZoneIndex}
+            isFleetDispatched={isFleetDispatched}
+          />
+        </div>
+        <div className="col-span-1 lg:col-span-3 bg-[#000000]">
+          <CleanupOptimization assignments={assignments} />
+        </div>
       </div>
 
       {/* Comparison Visual: Reactionary vs TIDAL Predictive */}
@@ -119,28 +134,26 @@ const Hotspots = () => {
       <InterventionSimulator />
 
       {/* Bottom CTA connecting to Circular Recovery */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-surface-container-high via-surface-container to-surface-container-high border border-primary/30 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
-
-        <div className="relative z-10 flex flex-col gap-2 max-w-2xl">
-          <div className="flex items-center gap-2 text-primary font-mono text-xs font-semibold uppercase tracking-wider">
-            <Recycle className="w-4 h-4" />
+      <div className="p-8 bg-[#111111] border-2 border-[#333333] flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+        <div className="flex flex-col gap-4 max-w-2xl">
+          <div className="flex items-center gap-3 text-[#ff4d00] font-mono text-[10px] font-bold uppercase tracking-widest">
+            <Square className="w-3 h-3 fill-current" />
             <span>Downstream Material Routing</span>
           </div>
-          <h3 className="text-xl sm:text-2xl font-headline font-bold text-on-surface">
-            Route Recovered Marine Plastics to Circular Recovery?
+          <h3 className="text-3xl sm:text-4xl font-headline font-black text-white uppercase tracking-tighter">
+            Route Plastics to Circular Recovery?
           </h3>
-          <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+          <p className="text-xs font-mono uppercase font-bold tracking-widest text-[#a3a3a3] leading-relaxed border-l-2 border-[#525252] pl-4">
             Seamlessly transfer collected ocean debris batches into verified upcycler networks, automated YOLO11 material valuation, and carbon offset ledgers.
           </p>
         </div>
 
         <Link 
           to="/circular-recovery" 
-          className="relative z-10 px-6 py-3.5 rounded-xl bg-primary text-on-primary font-headline font-bold text-xs sm:text-sm hover:shadow-glow transition-all duration-300 flex items-center gap-2.5 whitespace-nowrap shrink-0 group"
+          className="px-8 py-5 bg-white hover:bg-[#ff4d00] text-black font-headline font-black text-lg uppercase tracking-widest transition-none flex items-center justify-center gap-4 shrink-0 w-full md:w-auto"
         >
-          <span>Proceed to Circular Recovery</span>
-          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          <span>PROCEED TO RECOVERY</span>
+          <ArrowRight className="w-5 h-5" />
         </Link>
       </div>
 

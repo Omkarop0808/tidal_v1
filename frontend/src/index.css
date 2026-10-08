@@ -10,56 +10,51 @@
   html, body {
     margin: 0;
     padding: 0;
-    background-color: #050b10;
+    background-color: #03070a;
     color: #f1f5f9;
   }
 
   body {
     overscroll-behavior: none;
     background-image: 
-      radial-gradient(circle at 10% 20%, rgba(0, 242, 254, 0.05), transparent 45%),
-      radial-gradient(circle at 90% 80%, rgba(56, 189, 248, 0.04), transparent 45%);
+      radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.02), transparent 45%),
+      radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.02), transparent 45%);
     background-attachment: fixed;
   }
 
   /* Custom browser selection */
   ::selection {
-    background-color: rgba(0, 242, 254, 0.25);
-    color: #00f2fe;
+    background-color: rgba(255, 77, 0, 0.3);
+    color: #ff4d00;
   }
 }
 
 @layer utilities {
   /* Tactical Glass Panel */
   .glass-panel {
-    background-color: rgba(13, 27, 42, 0.65);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(56, 189, 248, 0.12);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    background-color: rgba(9, 14, 23, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(20, 35, 54, 1);
   }
 
   .glass-panel-interactive {
-    background-color: rgba(13, 27, 42, 0.65);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(56, 189, 248, 0.12);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    background-color: rgba(9, 14, 23, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(20, 35, 54, 1);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .glass-panel-interactive:hover {
-    background-color: rgba(19, 37, 55, 0.85);
-    border-color: rgba(0, 242, 254, 0.35);
-    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45), 0 0 20px -5px rgba(0, 242, 254, 0.15);
-    transform: translateY(-2px);
+    background-color: rgba(17, 17, 17, 0.95);
+    border-color: rgba(255, 255, 255, 0.5);
   }
 
   /* Tactical Card */
   .tactical-card {
-    background: linear-gradient(135deg, rgba(13, 27, 42, 0.8) 0%, rgba(8, 18, 28, 0.9) 100%);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(56, 189, 248, 0.1);
+    background: #000000;
+    border: 1px solid #142336;
     position: relative;
   }
 
@@ -68,11 +63,10 @@
   }
 
   .tactical-card-hover:hover {
-    border-color: rgba(0, 242, 254, 0.3);
-    box-shadow: 0 10px 30px -10px rgba(0, 242, 254, 0.15);
+    border-color: rgba(255, 77, 0, 0.5);
+    background-color: rgba(17, 17, 17, 1);
   }
 
-  /* Subtle tactical border corners */
   .corner-bracket {
     position: relative;
   }
@@ -83,8 +77,8 @@
     left: -1px;
     width: 6px;
     height: 6px;
-    border-top: 1.5px solid #00f2fe;
-    border-left: 1.5px solid #00f2fe;
+    border-top: 1.5px solid #ff4d00;
+    border-left: 1.5px solid #ff4d00;
   }
   .corner-bracket::after {
     content: '';
@@ -93,13 +87,13 @@
     right: -1px;
     width: 6px;
     height: 6px;
-    border-bottom: 1.5px solid #00f2fe;
-    border-right: 1.5px solid #00f2fe;
+    border-bottom: 1.5px solid #ff4d00;
+    border-right: 1.5px solid #ff4d00;
   }
 
   /* Text glow */
   .text-glow {
-    text-shadow: 0 0 15px rgba(0, 242, 254, 0.5);
+    text-shadow: none;
   }
   
   .text-glow-error {
@@ -108,77 +102,76 @@
 
   /* Leaflet Map Tiles Inversion & Deep Navy Tone */
   .map-tiles, .dark-map-tiles {
-    filter: invert(100%) hue-rotate(190deg) brightness(80%) contrast(120%) saturate(140%);
+    filter: invert(100%) grayscale(100%) brightness(70%) contrast(120%);
   }
 
   .leaflet-container {
-    background-color: #050b10 !important;
+    background-color: #000000 !important;
     font-family: inherit !important;
   }
 
-  /* Custom Leaflet Tooltips */
   .leaflet-tooltip.custom-tooltip {
-    background: rgba(13, 27, 42, 0.9) !important;
-    backdrop-filter: blur(12px) !important;
-    border: 1px solid rgba(56, 189, 248, 0.25) !important;
-    color: #f1f5f9 !important;
-    border-radius: 8px !important;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+    background: #000000 !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    color: #ffffff !important;
+    border-radius: 0px !important;
+    box-shadow: none !important;
     padding: 6px 10px !important;
+    font-family: "Fira Code", monospace !important;
+    font-size: 0.75rem !important;
   }
   .leaflet-tooltip.error-tooltip {
-    border-color: rgba(255, 51, 102, 0.5) !important;
+    border-color: rgba(220, 38, 38, 0.5) !important;
   }
   .leaflet-tooltip.primary-tooltip {
-    border-color: rgba(0, 242, 254, 0.5) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
   }
   .leaflet-tooltip.secondary-tooltip {
-    border-color: rgba(56, 189, 248, 0.5) !important;
+    border-color: rgba(255, 77, 0, 0.5) !important;
   }
   .leaflet-tooltip-top:before, .leaflet-tooltip-bottom:before, .leaflet-tooltip-left:before, .leaflet-tooltip-right:before {
     border-top-color: rgba(13, 27, 42, 0.9) !important;
   }
 }
 
-/* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(5, 11, 16, 0.8);
+  background: #000000;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(56, 189, 248, 0.2);
-  border-radius: 3px;
+  background: #333333;
+  border-radius: 0px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 242, 254, 0.4);
+  background: #555555;
 }
 
 /* Custom range input slider */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
-  background: rgba(30, 58, 82, 0.5);
-  border-radius: 9999px;
+  background: #222222;
+  border-radius: 0px;
   height: 6px;
 }
 
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #00f2fe;
+  width: 14px;
+  height: 14px;
+  border-radius: 0px;
+  background: #ffffff;
   cursor: pointer;
-  box-shadow: 0 0 12px rgba(0, 242, 254, 0.8);
-  border: 2px solid #050b10;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  box-shadow: none;
+  border: 1px solid #000000;
+  transition: transform 0.1s ease;
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.2);
-  box-shadow: 0 0 18px rgba(0, 242, 254, 1);
+  background: #ff4d00;
 }

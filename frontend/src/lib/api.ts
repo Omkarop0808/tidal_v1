@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
-export const WS_BASE_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000/ws';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1';
+export const WS_BASE_URL = import.meta.env.VITE_WS_URL || 'ws://127.0.0.1:8000/ws';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -39,6 +39,7 @@ export const api = {
 
   // Accuracy Analytics
   getAccuracyAnalytics: () => apiClient.get('/analytics/accuracy').then(res => res.data),
+  retrainModel: () => apiClient.post('/ml/retrain').then(res => res.data),
 
   // Fleet & Dispatch
   optimizeDispatch: (hotspots: any[]) => apiClient.post('/dispatch/optimize', { hotspots }).then(res => res.data),
@@ -54,4 +55,7 @@ export const api = {
   
   // Chat
   chat: (message: string) => apiClient.post('/chat', { message }).then(res => res.data),
+  
+  // Specific Analysis
+  getTelemetryAnalysis: (id: string) => apiClient.get(`/telemetry/analysis/${id}`).then(res => res.data),
 };

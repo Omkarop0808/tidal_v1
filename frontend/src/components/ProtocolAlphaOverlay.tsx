@@ -36,7 +36,7 @@ export const ProtocolAlphaOverlay = ({ isOpen, onClose }: ProtocolAlphaOverlayPr
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 15 }}
             transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-            className="relative w-full max-w-4xl bg-surface-container-low border border-error/40 rounded-3xl p-6 sm:p-10 shadow-2xl flex flex-col gap-8 overflow-hidden shadow-glow-error"
+            className="relative w-full max-w-4xl bg-surface-container-low border border-error/40 rounded-xl p-6 sm:p-10 shadow-2xl flex flex-col gap-8 overflow-hidden shadow-glow-error"
           >
             {/* Tactical Grid Background */}
             <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,51,102,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,51,102,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] pointer-events-none"></div>
@@ -45,7 +45,7 @@ export const ProtocolAlphaOverlay = ({ isOpen, onClose }: ProtocolAlphaOverlayPr
             <div className="relative z-10 flex items-start justify-between">
               <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-2xl bg-error/15 text-error border border-error/30 flex items-center justify-center shadow-glow-error">
+                  <div className="w-12 h-12 rounded-xl bg-error/15 text-error border border-error/30 flex items-center justify-center shadow-glow-error">
                     <ShieldAlert className="w-6 h-6 animate-pulse" />
                   </div>
                   <div>
@@ -72,7 +72,7 @@ export const ProtocolAlphaOverlay = ({ isOpen, onClose }: ProtocolAlphaOverlayPr
 
             {/* Tactical Objective Cards */}
             <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 sm:p-5 rounded-2xl bg-surface-container/80 border border-outline-variant/40 flex flex-col gap-3">
+              <div className="p-4 sm:p-5 rounded-xl bg-surface-container/80 border border-outline-variant/40 flex flex-col gap-3">
                 <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center">
                   <Crosshair className="w-4 h-4" />
                 </div>
@@ -82,7 +82,7 @@ export const ProtocolAlphaOverlay = ({ isOpen, onClose }: ProtocolAlphaOverlayPr
                 </div>
               </div>
 
-              <div className="p-4 sm:p-5 rounded-2xl bg-surface-container/80 border border-outline-variant/40 flex flex-col gap-3">
+              <div className="p-4 sm:p-5 rounded-xl bg-surface-container/80 border border-outline-variant/40 flex flex-col gap-3">
                 <div className="w-8 h-8 rounded-xl bg-secondary/10 text-secondary border border-secondary/20 flex items-center justify-center">
                   <Map className="w-4 h-4" />
                 </div>
@@ -92,7 +92,7 @@ export const ProtocolAlphaOverlay = ({ isOpen, onClose }: ProtocolAlphaOverlayPr
                 </div>
               </div>
 
-              <div className="p-4 sm:p-5 rounded-2xl bg-surface-container/80 border border-outline-variant/40 flex flex-col gap-3">
+              <div className="p-4 sm:p-5 rounded-xl bg-surface-container/80 border border-outline-variant/40 flex flex-col gap-3">
                 <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center">
                   <Activity className="w-4 h-4" />
                 </div>

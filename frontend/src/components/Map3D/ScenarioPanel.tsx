@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Sliders, Wind, CloudRain, Shield, Play } from 'lucide-react';
 import { useSim } from '../../store';
+import { api } from '../../lib/api';
 
 export function ScenarioPanel() {
   const windSpeed = useSim(state => state.windSpeed);
@@ -14,22 +15,16 @@ export function ScenarioPanel() {
   const handleRunSimulation = async () => {
     setIsSimulating(true);
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/simulate/scenario', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          wind_speed: windSpeed,
-          rainfall_increase: precipitation,
-          barrier_efficiency: barrierEfficiency,
-          cleanup_teams: 12
-        })
+      const response = await api.runSimulation({
+        wind_speed: windSpeed,
+        rainfall_increase: precipitation,
+        barrier_efficiency: barrierEfficiency,
+        cleanup_teams: 12,
+        lat: 19.10,
+        lon: 72.70
       });
-      if (response.ok) {
-        const trajResponse = await fetch(`http://127.0.0.1:8000/api/v1/simulate/predictive?lat=19.10&lon=72.70`);
-        if (trajResponse.ok) {
-           const trajData = await trajResponse.json();
-           setTrajectory(trajData.trajectory);
-        }
+      if (response && response.trajectory_intervention) {
+         setTrajectory(response.trajectory_intervention);
       }
     } catch (e) {
       console.error(e);
@@ -39,26 +34,26 @@ export function ScenarioPanel() {
   };
 
   return (
-    <div className="absolute top-16 left-4 w-84 bg-surface-container-low/95 backdrop-blur-2xl border border-outline-variant/50 shadow-2xl rounded-3xl p-5 text-on-surface z-40 flex flex-col gap-4">
+    <div className="absolute top-20 left-6 w-84 bg-black border-2 border-[#333333] shadow-2xl p-6 text-white z-40 flex flex-col gap-6">
       
-      <div className="flex items-center justify-between pb-3 border-b border-outline-variant/30">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
-            <Sliders className="w-4 h-4" />
+      <div className="flex items-center justify-between pb-4 border-b-2 border-[#333333]">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-white flex items-center justify-center text-black">
+            <Sliders className="w-5 h-5" />
           </div>
-          <h2 className="font-headline font-bold text-sm text-on-surface">Intervention Controls</h2>
+          <h2 className="font-headline font-black text-sm text-white uppercase tracking-tighter">INTERVENTION CONTROLS</h2>
         </div>
-        <span className="text-[10px] font-mono text-primary uppercase">LIVE TWIN</span>
+        <span className="text-[10px] font-mono font-bold text-black bg-white px-2 py-1 uppercase tracking-widest">LIVE TWIN</span>
       </div>
       
-      <div className="flex flex-col gap-3.5 font-mono text-xs">
-        <div className="flex flex-col gap-1.5 p-3 rounded-2xl bg-surface-container/60 border border-outline-variant/30">
-          <label className="flex justify-between text-[11px] text-on-surface-variant">
-            <span className="flex items-center gap-1.5">
-              <Wind className="w-3.5 h-3.5 text-primary" />
-              Wind Speed
+      <div className="flex flex-col gap-4 font-mono text-[10px] font-bold uppercase tracking-widest">
+        <div className="flex flex-col gap-3 p-4 bg-[#111111] border-2 border-[#333333]">
+          <label className="flex justify-between text-white">
+            <span className="flex items-center gap-2">
+              <Wind className="w-4 h-4 text-[#a3a3a3]" />
+              WIND SPEED
             </span>
-            <span className="font-bold text-primary">{windSpeed} km/h</span>
+            <span>{windSpeed} KM/H</span>
           </label>
           <input 
             type="range" 
@@ -66,17 +61,17 @@ export function ScenarioPanel() {
             max="60" 
             value={windSpeed} 
             onChange={e => setScenario({ windSpeed: parseInt(e.target.value) })}
-            className="w-full mt-1"
+            className="w-full mt-2 accent-white"
           />
         </div>
 
-        <div className="flex flex-col gap-1.5 p-3 rounded-2xl bg-surface-container/60 border border-outline-variant/30">
-          <label className="flex justify-between text-[11px] text-on-surface-variant">
-            <span className="flex items-center gap-1.5">
-              <CloudRain className="w-3.5 h-3.5 text-secondary" />
-              Rainfall Surge
+        <div className="flex flex-col gap-3 p-4 bg-[#111111] border-2 border-[#333333]">
+          <label className="flex justify-between text-white">
+            <span className="flex items-center gap-2">
+              <CloudRain className="w-4 h-4 text-[#ff4d00]" />
+              RAINFALL SURGE
             </span>
-            <span className="font-bold text-secondary">{precipitation}%</span>
+            <span className="text-[#ff4d00]">{precipitation}%</span>
           </label>
           <input 
             type="range" 
@@ -84,17 +79,17 @@ export function ScenarioPanel() {
             max="100" 
             value={precipitation} 
             onChange={e => setScenario({ precipitation: parseInt(e.target.value) })}
-            className="w-full mt-1"
+            className="w-full mt-2 accent-[#ff4d00]"
           />
         </div>
 
-        <div className="flex flex-col gap-1.5 p-3 rounded-2xl bg-surface-container/60 border border-outline-variant/30">
-          <label className="flex justify-between text-[11px] text-on-surface-variant">
-            <span className="flex items-center gap-1.5">
-              <Shield className="w-3.5 h-3.5 text-emerald-400" />
-              Boom Efficiency
+        <div className="flex flex-col gap-3 p-4 bg-[#111111] border-2 border-[#333333]">
+          <label className="flex justify-between text-white">
+            <span className="flex items-center gap-2">
+              <Shield className="w-4 h-4 text-white" />
+              BOOM EFFICIENCY
             </span>
-            <span className="font-bold text-emerald-400">{barrierEfficiency}%</span>
+            <span>{barrierEfficiency}%</span>
           </label>
           <input 
             type="range" 
@@ -102,24 +97,24 @@ export function ScenarioPanel() {
             max="100" 
             value={barrierEfficiency} 
             onChange={e => setScenario({ barrierEfficiency: parseInt(e.target.value) })}
-            className="w-full mt-1"
+            className="w-full mt-2 accent-white"
           />
         </div>
 
         <button 
           onClick={handleRunSimulation}
           disabled={isSimulating}
-          className="mt-1 w-full py-3 bg-gradient-to-r from-primary to-secondary text-on-primary rounded-xl font-headline font-bold text-xs tracking-wider uppercase shadow-glow-sm hover:shadow-glow disabled:opacity-50 transition-all duration-300 flex items-center justify-center gap-2"
+          className="mt-2 w-full py-4 bg-[#ff4d00] hover:bg-white text-black font-headline font-black text-sm tracking-wider uppercase disabled:opacity-50 transition-none flex items-center justify-center gap-3 border-2 border-[#ff4d00] hover:border-white"
         >
           {isSimulating ? (
             <>
-              <div className="w-3.5 h-3.5 border-2 border-on-primary border-t-transparent rounded-full animate-spin"></div>
-              <span>Recalculating...</span>
+              <div className="w-4 h-4 border-2 border-black border-t-transparent animate-spin"></div>
+              <span>RECALCULATING...</span>
             </>
           ) : (
             <>
-              <Play className="w-3.5 h-3.5 fill-current" />
-              <span>Execute 3D Protocol</span>
+              <Play className="w-4 h-4 fill-current" />
+              <span>EXECUTE PROTOCOL</span>
             </>
           )}
         </button>

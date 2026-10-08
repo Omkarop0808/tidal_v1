@@ -1,7 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, AlertTriangle, Recycle, Sparkles, MapPin } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 
 interface DebrisAnalysisPanelProps {
   isOpen: boolean;
@@ -29,16 +28,18 @@ export function DebrisAnalysisPanel({ isOpen, onClose, activityId }: DebrisAnaly
     if (isOpen) {
       setLoading(true);
       if (activityId) {
-        axios.get(`http://localhost:8000/api/v1/telemetry/analysis/${activityId}`)
-          .then(res => {
-            setAnalysis(res.data.analysis || mockAnalysis);
-          })
-          .catch(() => {
-            setAnalysis(mockAnalysis);
-          })
-          .finally(() => {
-            setLoading(false);
-          });
+        import('../lib/api').then(({ api }) => {
+          api.getTelemetryAnalysis(activityId)
+            .then(res => {
+              setAnalysis(res.analysis || mockAnalysis);
+            })
+            .catch(() => {
+              setAnalysis(mockAnalysis);
+            })
+            .finally(() => {
+              setLoading(false);
+            });
+        });
       } else {
         setAnalysis(mockAnalysis);
         setLoading(false);
@@ -65,14 +66,14 @@ export function DebrisAnalysisPanel({ isOpen, onClose, activityId }: DebrisAnaly
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 26, stiffness: 220 }}
-            className="fixed top-0 right-0 bottom-0 w-full max-w-2xl bg-surface-container-low/95 backdrop-blur-2xl border-l border-outline-variant/40 z-[5000] overflow-y-auto shadow-2xl flex flex-col"
+            className="fixed top-0 right-0 bottom-0 w-full max-w-2xl bg-[#000000] border-l border-[#142336] z-[5000] overflow-y-auto flex flex-col"
           >
             <div className="p-6 sm:p-10 flex flex-col gap-8">
               
               {/* Header */}
-              <div className="flex items-start justify-between pb-4 border-b border-outline-variant/30">
+              <div className="flex items-start justify-between pb-4 border-b border-[#142336]">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center text-primary shadow-glow-sm">
+                  <div className="w-10 h-10 bg-primary/10 border border-primary/30 flex items-center justify-center text-primary shadow-glow-sm">
                     <Sparkles className="w-5 h-5" />
                   </div>
                   <div>
@@ -87,7 +88,7 @@ export function DebrisAnalysisPanel({ isOpen, onClose, activityId }: DebrisAnaly
 
                 <button 
                   onClick={onClose} 
-                  className="p-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface-variant hover:text-on-surface border border-outline-variant/30"
+                  className="p-2.5 bg-[#090E17] hover:bg-[#142336] transition-colors text-on-surface-variant hover:text-on-surface border border-[#142336]"
                   aria-label="Close Debris Analysis"
                 >
                   <X className="w-5 h-5" />
@@ -105,7 +106,7 @@ export function DebrisAnalysisPanel({ isOpen, onClose, activityId }: DebrisAnaly
                 <div className="flex flex-col gap-8">
                   
                   {/* Drone Image Frame */}
-                  <div className="w-full h-64 sm:h-72 bg-surface-container-lowest rounded-3xl overflow-hidden relative border border-outline-variant/40 group shadow-2xl">
+                  <div className="w-full h-64 sm:h-72 bg-[#090E17] relative border border-[#142336] group">
                     <img 
                       src="https://images.unsplash.com/photo-1621451537084-482c73073e0f?auto=format&fit=crop&w=800&q=80" 
                       alt="Detected Debris" 
@@ -113,13 +114,13 @@ export function DebrisAnalysisPanel({ isOpen, onClose, activityId }: DebrisAnaly
                     />
                     
                     {/* Simulated Bounding Box */}
-                    <div className="absolute top-[22%] left-[24%] w-[52%] h-[56%] border-2 border-primary bg-primary/20 rounded-xl flex items-start justify-start p-2 shadow-glow-sm pointer-events-none">
-                      <span className="bg-primary text-on-primary text-[10px] font-mono px-2 py-0.5 rounded font-bold">
+                    <div className="absolute top-[22%] left-[24%] w-[52%] h-[56%] border-2 border-primary bg-primary/20 flex items-start justify-start p-2 shadow-glow-sm pointer-events-none">
+                      <span className="bg-primary text-on-primary text-[10px] font-mono px-2 py-0.5 font-bold">
                         YOLO11: {analysis.trashType.substring(0, 20)}...
                       </span>
                     </div>
 
-                    <div className="absolute top-4 left-4 bg-surface-container-low/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-outline-variant/40">
+                    <div className="absolute top-4 left-4 bg-[#000000] px-3 py-1.5 border border-[#142336]">
                       <span className="text-primary font-mono text-xs font-bold uppercase tracking-wider">
                         Confidence {analysis.confidence}%
                       </span>
@@ -132,18 +133,18 @@ export function DebrisAnalysisPanel({ isOpen, onClose, activityId }: DebrisAnaly
                       {analysis.trashType}
                     </h3>
                     <div className="flex flex-wrap gap-2.5">
-                      <span className="px-3 py-1 rounded-full bg-error/10 text-error font-mono text-xs font-semibold border border-error/30">
+                      <span className="px-3 py-1 bg-error/10 text-error font-mono text-xs font-semibold border border-error/30">
                         {analysis.threatLevel}
                       </span>
-                      <span className="px-3 py-1 rounded-full bg-surface-container text-on-surface-variant font-mono text-xs border border-outline-variant/40">
+                      <span className="px-3 py-1 bg-[#090E17] text-on-surface-variant font-mono text-xs border border-[#142336]">
                         {analysis.size}
                       </span>
                     </div>
                   </div>
 
                   {/* Metrics Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="p-5 rounded-2xl bg-surface-container/70 border border-outline-variant/40 flex flex-col gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-[1px] bg-[#142336]">
+                    <div className="p-5 bg-[#090E17] flex flex-col gap-2">
                       <div className="flex items-center gap-2 text-warning font-mono text-xs">
                         <AlertTriangle className="w-4 h-4" />
                         <span className="uppercase tracking-widest text-on-surface-variant text-[10px]">Decomposition</span>
@@ -153,7 +154,7 @@ export function DebrisAnalysisPanel({ isOpen, onClose, activityId }: DebrisAnaly
                       </span>
                     </div>
 
-                    <div className="p-5 rounded-2xl bg-surface-container/70 border border-outline-variant/40 flex flex-col gap-2">
+                    <div className="p-5 bg-[#090E17] flex flex-col gap-2">
                       <div className="flex items-center gap-2 text-primary font-mono text-xs">
                         <MapPin className="w-4 h-4" />
                         <span className="uppercase tracking-widest text-on-surface-variant text-[10px]">Coordinate Vector</span>
@@ -165,8 +166,8 @@ export function DebrisAnalysisPanel({ isOpen, onClose, activityId }: DebrisAnaly
                   </div>
 
                   {/* Impact Analysis & Strategy */}
-                  <div className="flex flex-col gap-3.5">
-                    <div className="p-5 rounded-2xl bg-error/10 border border-error/20 flex flex-col gap-1.5">
+                  <div className="flex flex-col gap-[1px] bg-[#142336]">
+                    <div className="p-5 bg-[#090E17] flex flex-col gap-1.5 border-l border-error">
                       <span className="font-mono text-[10px] tracking-widest uppercase text-error font-bold">
                         Environmental Threat Profile
                       </span>
@@ -175,7 +176,7 @@ export function DebrisAnalysisPanel({ isOpen, onClose, activityId }: DebrisAnaly
                       </p>
                     </div>
 
-                    <div className="p-5 rounded-2xl bg-surface-container/70 border border-outline-variant/30 flex flex-col gap-1.5">
+                    <div className="p-5 bg-[#090E17] flex flex-col gap-1.5">
                       <span className="font-mono text-[10px] tracking-widest uppercase text-secondary font-bold">
                         Probable Outfall Source
                       </span>
@@ -184,7 +185,7 @@ export function DebrisAnalysisPanel({ isOpen, onClose, activityId }: DebrisAnaly
                       </p>
                     </div>
 
-                    <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex flex-col gap-1.5">
+                    <div className="p-5 bg-[#090E17] flex flex-col gap-1.5 border-l border-emerald-500">
                       <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-bold">
                         <Recycle className="w-4 h-4" />
                         <span className="uppercase tracking-widest text-[10px]">Upcycler Routing Strategy</span>
@@ -196,15 +197,18 @@ export function DebrisAnalysisPanel({ isOpen, onClose, activityId }: DebrisAnaly
                   </div>
                   
                   {/* Action Button */}
-                  <button 
+                  <motion.button 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => {
-                      alert("Vessel SKM-01 Dispatched to Debris Coordinates!");
-                      onClose();
+                      // Dispatched log
+                      console.log("Vessel SKM-01 Dispatched to Debris Coordinates!");
+                      setTimeout(onClose, 500);
                     }}
-                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-primary to-secondary text-on-primary font-headline font-bold text-xs sm:text-sm uppercase tracking-wider hover:shadow-glow transition-all duration-300 shadow-lg"
+                    className="w-full py-3 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/50 text-emerald-400 font-headline font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all"
                   >
                     Acknowledge & Dispatch Autonomous Skimmer
-                  </button>
+                  </motion.button>
 
                 </div>
               )}

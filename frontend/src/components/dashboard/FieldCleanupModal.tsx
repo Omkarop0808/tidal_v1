@@ -3,10 +3,10 @@ import {
   X, 
   CheckCircle2, 
   Trash2, 
-  Sparkles, 
   ArrowRight, 
   ShieldCheck, 
-  RotateCw
+  RotateCw,
+  Square
 } from 'lucide-react';
 import { api } from '../../lib/api';
 
@@ -31,7 +31,7 @@ export const FieldCleanupModal: React.FC<FieldCleanupModalProps> = ({
   onSuccess 
 }) => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [teamName, setTeamName] = useState('Afroz Shah Foundation Squad A');
+  const [teamName, setTeamName] = useState('AFROZ SHAH SQUAD A');
   const [vesselId, setVesselId] = useState('TIDAL-SKIM-01');
   const [collectedKg, setCollectedKg] = useState<number>(
     Math.round((beach.estimated_debris_kg || beach.current_debris_kg || 300) * 0.8)
@@ -71,7 +71,7 @@ export const FieldCleanupModal: React.FC<FieldCleanupModalProps> = ({
         before_img: beforeImage,
         after_img: afterImage,
         effectiveness_pct: cvEffectiveness,
-        notes: `Verified field cleanup by ${teamName}.`
+        notes: `VERIFIED BY ${teamName}.`
       });
       setIsSubmitted(true);
       setTimeout(() => {
@@ -93,105 +93,97 @@ export const FieldCleanupModal: React.FC<FieldCleanupModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[6000] flex items-center justify-center p-4 bg-background/85 backdrop-blur-md">
-      <div className="bg-surface-container-low w-full max-w-2xl rounded-3xl shadow-2xl border border-primary/30 flex flex-col overflow-hidden max-h-[90vh]">
+    <div className="fixed inset-0 z-[6000] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
+      <div className="bg-[#050505] w-full max-w-3xl border-2 border-[#333333] flex flex-col overflow-hidden max-h-[90vh]">
         
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-6 border-b border-outline-variant/30 bg-surface-container/50">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center text-primary shadow-glow-sm">
-              <Trash2 className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-on-surface font-headline font-bold text-lg">
-                Log Field Cleanup & Synchronize State
+        <div className="flex items-center justify-between p-6 border-b-2 border-[#333333] bg-[#111111]">
+          <div className="flex items-center gap-4">
+            <Trash2 className="w-6 h-6 text-white" />
+            <div className="flex flex-col gap-1">
+              <h2 className="text-white font-headline font-black text-2xl uppercase tracking-tighter">
+                Log Field Cleanup
               </h2>
-              <p className="text-on-surface-variant font-mono text-xs">
-                Target: <strong className="text-primary">{beach.name}</strong>
+              <p className="text-[10px] font-mono text-[#a3a3a3] uppercase font-bold tracking-widest">
+                TARGET: <strong className="text-white">{beach.name}</strong>
               </p>
             </div>
           </div>
           <button 
             onClick={onClose}
-            className="w-9 h-9 rounded-xl hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors border border-outline-variant/30"
+            className="w-10 h-10 bg-[#000000] hover:bg-[#ff4d00] border-2 border-[#333333] hover:border-[#ff4d00] flex items-center justify-center text-white hover:text-black transition-none"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Multi-Step Content */}
-        <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
+        <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-8">
           
           {/* Progress Indicator */}
-          <div className="grid grid-cols-3 gap-2 text-center font-mono text-xs">
-            <div className={`p-2 rounded-xl border transition-all ${
-              step >= 1 ? 'bg-primary/15 border-primary text-primary font-bold' : 'bg-surface-container border-outline-variant/30 text-on-surface-variant'
-            }`}>
-              1. Team & Evidence
+          <div className="grid grid-cols-3 gap-[1px] bg-[#333333] border-2 border-[#333333] font-mono text-[10px] uppercase font-bold tracking-widest text-center">
+            <div className={`p-3 ${step >= 1 ? 'bg-white text-black' : 'bg-[#000000] text-[#525252]'}`}>
+              1. EVIDENCE
             </div>
-            <div className={`p-2 rounded-xl border transition-all ${
-              step >= 2 ? 'bg-primary/15 border-primary text-primary font-bold' : 'bg-surface-container border-outline-variant/30 text-on-surface-variant'
-            }`}>
-              2. Weight & Masses
+            <div className={`p-3 ${step >= 2 ? 'bg-white text-black' : 'bg-[#000000] text-[#525252]'}`}>
+              2. MASS LOGGING
             </div>
-            <div className={`p-2 rounded-xl border transition-all ${
-              step >= 3 ? 'bg-primary/15 border-primary text-primary font-bold' : 'bg-surface-container border-outline-variant/30 text-on-surface-variant'
-            }`}>
-              3. Verification & Sync
+            <div className={`p-3 ${step >= 3 ? 'bg-[#ff4d00] text-black' : 'bg-[#000000] text-[#525252]'}`}>
+              3. SYNC
             </div>
           </div>
 
           {/* STEP 1: Team & Visual Evidence */}
           {step === 1 && (
-            <div className="flex flex-col gap-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono text-xs">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-on-surface-variant uppercase text-[10px] font-bold">Assigned Cleanup Team</label>
+            <div className="flex flex-col gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 font-mono text-[10px] uppercase font-bold tracking-widest">
+                <div className="flex flex-col gap-3">
+                  <label className="text-[#a3a3a3]">Assigned Squad</label>
                   <input 
                     type="text"
                     value={teamName}
                     onChange={(e) => setTeamName(e.target.value)}
-                    className="w-full bg-surface-container border border-outline-variant/40 rounded-xl px-3.5 py-2.5 text-on-surface outline-none focus:border-primary"
+                    className="w-full bg-[#111111] border-2 border-[#333333] focus:border-white p-4 text-white outline-none rounded-none"
                   />
                 </div>
 
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-on-surface-variant uppercase text-[10px] font-bold">Supporting Skimmer Vessel</label>
+                <div className="flex flex-col gap-3">
+                  <label className="text-[#a3a3a3]">Supporting Skimmer</label>
                   <select 
                     value={vesselId}
                     onChange={(e) => setVesselId(e.target.value)}
-                    className="w-full bg-surface-container border border-outline-variant/40 rounded-xl px-3.5 py-2.5 text-on-surface outline-none focus:border-primary"
+                    className="w-full bg-[#111111] border-2 border-[#333333] focus:border-white p-4 text-white outline-none rounded-none appearance-none"
                   >
-                    <option value="TIDAL-SKIM-01">TIDAL-SKIM-01 (Autonomous)</option>
+                    <option value="TIDAL-SKIM-01">TIDAL-SKIM-01 [AUTO]</option>
                     <option value="AQUA-SWEEP-ALPHA">AQUA-SWEEP-ALPHA</option>
-                    <option value="TIDAL-SKIM-02">TIDAL-SKIM-02 (Heavy Skimmer)</option>
-                    <option value="SHORE-SQUAD-BRAVO">Shoreline Manual Squad Bravo</option>
+                    <option value="TIDAL-SKIM-02">TIDAL-SKIM-02 [HEAVY]</option>
+                    <option value="SHORE-SQUAD-BRAVO">SQUAD BRAVO</option>
                   </select>
                 </div>
               </div>
 
               {/* Before vs After Images */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-2">
-                  <span className="text-xs font-mono text-on-surface-variant uppercase font-semibold">
-                    Before Cleanup Evidence:
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="flex flex-col gap-3">
+                  <span className="text-[10px] font-mono text-white uppercase font-bold tracking-widest flex items-center gap-2">
+                    <Square className="w-2 h-2 fill-current" /> PRE-CLEANUP
                   </span>
-                  <div className="w-full h-40 rounded-2xl overflow-hidden bg-surface-container border border-outline-variant/40 relative">
-                    <img src={beforeImage} alt="Before cleanup" className="w-full h-full object-cover filter contrast-125" />
-                    <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-error/80 text-white font-mono text-[10px] font-bold">
-                      Coverage: ~75%
+                  <div className="w-full h-48 bg-[#111111] border-2 border-[#333333] relative">
+                    <img src={beforeImage} alt="Before cleanup" className="w-full h-full object-cover filter grayscale contrast-125" />
+                    <span className="absolute bottom-0 left-0 px-3 py-2 bg-black text-[#ff4d00] border-t-2 border-r-2 border-[#ff4d00] font-mono text-[10px] font-bold">
+                      COVERAGE: ~75%
                     </span>
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-2">
-                  <span className="text-xs font-mono text-on-surface-variant uppercase font-semibold">
-                    After Cleanup Evidence:
+                <div className="flex flex-col gap-3">
+                  <span className="text-[10px] font-mono text-white uppercase font-bold tracking-widest flex items-center gap-2">
+                    <Square className="w-2 h-2 fill-current" /> POST-CLEANUP
                   </span>
-                  <div className="w-full h-40 rounded-2xl overflow-hidden bg-surface-container border border-outline-variant/40 relative">
-                    <img src={afterImage} alt="After cleanup" className="w-full h-full object-cover" />
-                    <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-emerald-500/80 text-white font-mono text-[10px] font-bold">
-                      Coverage: ~12%
+                  <div className="w-full h-48 bg-[#111111] border-2 border-[#333333] relative">
+                    <img src={afterImage} alt="After cleanup" className="w-full h-full object-cover filter grayscale" />
+                    <span className="absolute bottom-0 left-0 px-3 py-2 bg-white text-black font-mono text-[10px] font-bold">
+                      COVERAGE: ~12%
                     </span>
                   </div>
                 </div>
@@ -199,70 +191,70 @@ export const FieldCleanupModal: React.FC<FieldCleanupModalProps> = ({
 
               <button 
                 onClick={() => setStep(2)}
-                className="self-end px-6 py-3 rounded-xl bg-primary text-on-primary font-headline font-bold text-xs flex items-center gap-2 hover:shadow-glow transition-all"
+                className="self-end px-8 py-4 bg-white hover:bg-[#ff4d00] text-black font-headline font-black text-sm uppercase tracking-widest flex items-center gap-4 transition-none"
               >
-                <span>Proceed to Mass Logging</span>
-                <ArrowRight className="w-4 h-4" />
+                <span>PROCEED</span>
+                <ArrowRight className="w-5 h-5" />
               </button>
             </div>
           )}
 
           {/* STEP 2: Weights & Masses */}
           {step === 2 && (
-            <div className="flex flex-col gap-5 font-mono text-xs">
-              <div className="p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/30 flex items-center justify-between">
-                <div>
-                  <span className="text-on-surface-variant text-[10px] uppercase block">Pre-Cleanup Predicted Mass</span>
-                  <span className="text-xl font-headline font-bold text-on-surface">
-                    {beach.estimated_debris_kg || beach.current_debris_kg || 350} kg
+            <div className="flex flex-col gap-8 font-mono text-[10px] uppercase font-bold tracking-widest">
+              <div className="p-6 bg-[#111111] border-2 border-[#333333] flex items-center justify-between">
+                <div className="flex flex-col gap-2">
+                  <span className="text-[#a3a3a3]">PREDICTED MASS</span>
+                  <span className="text-4xl font-headline font-black text-white">
+                    {beach.estimated_debris_kg || beach.current_debris_kg || 350} KG
                   </span>
                 </div>
-                <span className="px-2.5 py-1 rounded bg-primary/10 text-primary font-bold text-[11px]">
-                  XGBoost Baseline
+                <span className="px-3 py-2 bg-white text-black font-bold">
+                  XGBOOST BASELINE
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 rounded-2xl bg-surface-container/80 border border-emerald-500/30 flex flex-col gap-2">
-                  <label className="text-emerald-400 font-bold uppercase text-[10px]">
-                    Collected Garbage Mass (kg)
+              <div className="grid grid-cols-2 gap-[1px] bg-[#333333] border-2 border-[#333333]">
+                <div className="p-6 bg-[#000000] flex flex-col gap-4 border-l-4 border-l-[#ff4d00]">
+                  <label className="text-[#ff4d00] font-bold">
+                    COLLECTED MASS (KG)
                   </label>
                   <input 
                     type="number"
                     value={collectedKg}
                     onChange={(e) => setCollectedKg(Math.max(0, parseInt(e.target.value) || 0))}
-                    className="w-full bg-surface-container-high border border-emerald-500/40 rounded-xl px-3 py-2 text-on-surface font-headline font-bold text-2xl outline-none"
+                    className="w-full bg-[#111111] border-b-4 border-b-[#333333] focus:border-b-[#ff4d00] px-4 py-4 text-white font-headline font-black text-4xl outline-none rounded-none"
                   />
-                  <span className="text-[10px] text-on-surface-variant">Weighed on field scale</span>
+                  <span className="text-[#525252]">FIELD SCALE</span>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-surface-container/80 border border-warning/30 flex flex-col gap-2">
-                  <label className="text-warning font-bold uppercase text-[10px]">
-                    Estimated Remaining Mass (kg)
+                <div className="p-6 bg-[#000000] flex flex-col gap-4 border-l-4 border-l-white">
+                  <label className="text-white font-bold">
+                    REMAINING MASS (KG)
                   </label>
                   <input 
                     type="number"
                     value={remainingKg}
                     onChange={(e) => setRemainingKg(Math.max(0, parseInt(e.target.value) || 0))}
-                    className="w-full bg-surface-container-high border border-warning/40 rounded-xl px-3 py-2 text-on-surface font-headline font-bold text-2xl outline-none"
+                    className="w-full bg-[#111111] border-b-4 border-b-[#333333] focus:border-b-white px-4 py-4 text-white font-headline font-black text-4xl outline-none rounded-none"
                   />
-                  <span className="text-[10px] text-on-surface-variant">Unreachable crevices</span>
+                  <span className="text-[#525252]">ESTIMATED CREVICE DEBRIS</span>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-4">
+              <div className="flex items-center justify-between pt-4 border-t-2 border-[#333333]">
                 <button 
                   onClick={() => setStep(1)}
-                  className="px-4 py-2.5 rounded-xl bg-surface-container text-on-surface-variant hover:text-on-surface text-xs"
+                  className="px-6 py-4 bg-[#000000] hover:bg-white text-[#a3a3a3] hover:text-black border-2 border-[#333333] hover:border-white transition-none"
                 >
-                  Back
+                  BACK
                 </button>
                 <button 
                   onClick={() => setStep(3)}
-                  className="px-6 py-3 rounded-xl bg-primary text-on-primary font-headline font-bold text-xs flex items-center gap-2 hover:shadow-glow transition-all"
+                  className="px-8 py-4 bg-white hover:bg-[#ff4d00] text-black font-headline font-black text-sm uppercase tracking-widest flex items-center gap-4 transition-none"
                 >
-                  <span>Verify with Computer Vision</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <span>VERIFY VISION</span>
+                  <ArrowRight className="w-5 h-5" />
                 </button>
               </div>
             </div>
@@ -270,82 +262,82 @@ export const FieldCleanupModal: React.FC<FieldCleanupModalProps> = ({
 
           {/* STEP 3: Verification & Central Sync */}
           {step === 3 && (
-            <div className="flex flex-col gap-5 font-mono text-xs">
+            <div className="flex flex-col gap-8 font-mono text-[10px] uppercase font-bold tracking-widest">
               
               {/* CV Verification Card */}
-              <div className="p-5 rounded-2xl bg-surface-container/80 border border-primary/30 flex flex-col gap-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-primary font-bold uppercase text-[11px] flex items-center gap-1.5">
-                    <Sparkles className="w-4 h-4" />
-                    Computer Vision Verification Result
+              <div className="p-6 bg-[#111111] border-2 border-white flex flex-col gap-6">
+                <div className="flex items-center justify-between border-b-2 border-[#333333] pb-4">
+                  <span className="text-white font-black uppercase flex items-center gap-3">
+                    <Square className="w-3 h-3 fill-white" />
+                    CV VERIFICATION RESULT
                   </span>
                   <button 
                     onClick={handleVerifyVision}
                     disabled={isVerifying}
-                    className="px-2.5 py-1 rounded bg-surface-container-high text-on-surface-variant hover:text-primary text-[10px] flex items-center gap-1"
+                    className="px-4 py-2 bg-black border border-[#333333] hover:border-white text-[#a3a3a3] hover:text-white flex items-center gap-2 transition-none"
                   >
                     <RotateCw className={`w-3 h-3 ${isVerifying ? 'animate-spin' : ''}`} />
-                    <span>Re-evaluate</span>
+                    <span>RE-EVALUATE</span>
                   </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 rounded-xl bg-surface-container-low border border-outline-variant/30 flex flex-col gap-1">
-                    <span className="text-[10px] text-on-surface-variant uppercase">Debris Reduction</span>
-                    <span className="font-headline font-bold text-2xl text-emerald-400">
+                <div className="grid grid-cols-2 gap-[1px] bg-[#333333] border border-[#333333]">
+                  <div className="p-4 bg-[#000000] flex flex-col gap-2">
+                    <span className="text-[#a3a3a3]">DEBRIS REDUCTION</span>
+                    <span className="font-headline font-black text-4xl text-white">
                       {cvEffectiveness}%
                     </span>
                   </div>
-                  <div className="p-3 rounded-xl bg-surface-container-low border border-outline-variant/30 flex flex-col gap-1">
-                    <span className="text-[10px] text-on-surface-variant uppercase">Prediction Accuracy</span>
-                    <span className="font-headline font-bold text-2xl text-primary">
+                  <div className="p-4 bg-[#000000] flex flex-col gap-2">
+                    <span className="text-[#a3a3a3]">PREDICTION ACCURACY</span>
+                    <span className="font-headline font-black text-4xl text-[#ff4d00]">
                       94.2%
                     </span>
                   </div>
                 </div>
 
-                <p className="text-[11px] text-on-surface-variant leading-relaxed">
-                  YOLO11 detected an 86% decrease in plastic surface bounding boxes between before and after photographic submissions.
+                <p className="text-[#a3a3a3] leading-relaxed border-l-2 border-[#333333] pl-4">
+                  YOLO11 DETECTED AN 86% DECREASE IN PLASTIC SURFACE BOUNDING BOXES BETWEEN BEFORE AND AFTER PHOTOGRAPHIC SUBMISSIONS.
                 </p>
               </div>
 
               {/* State Transition Summary */}
-              <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex flex-col gap-2 text-emerald-300">
-                <span className="font-bold text-xs flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4" />
-                  Central Intelligence State Transition
+              <div className="p-6 bg-[#ff4d00] flex flex-col gap-4 text-black border-2 border-[#ff4d00]">
+                <span className="font-black text-xs flex items-center gap-3">
+                  <ShieldCheck className="w-5 h-5" />
+                  STATE TRANSITION
                 </span>
-                <p className="text-[11px] leading-relaxed text-emerald-200">
-                  Submitting will update {beach.name} from <strong className="text-white">High Risk</strong> to <strong className="text-white">Cleaned</strong> in the central database. Connected field teams will immediately see {remainingKg}kg residual load, and next scheduled sweep will be queued for tomorrow morning.
+                <p className="leading-relaxed border-l-2 border-black pl-4">
+                  SUBMITTING WILL UPDATE {beach.name} TO CLEANED. FIELD TEAMS WILL SEE {remainingKg}KG RESIDUAL LOAD. NEXT SWEEP QUEUED.
                 </p>
               </div>
 
-              <div className="flex items-center justify-between pt-4">
+              <div className="flex items-center justify-between pt-4 border-t-2 border-[#333333]">
                 <button 
                   onClick={() => setStep(2)}
-                  className="px-4 py-2.5 rounded-xl bg-surface-container text-on-surface-variant hover:text-on-surface text-xs"
+                  className="px-6 py-4 bg-[#000000] hover:bg-white text-[#a3a3a3] hover:text-black border-2 border-[#333333] hover:border-white transition-none"
                 >
-                  Back
+                  BACK
                 </button>
                 <button 
                   onClick={handleSubmitReport}
                   disabled={isSubmitting || isSubmitted}
-                  className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-primary text-on-primary font-headline font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-glow-success transition-all disabled:opacity-50"
+                  className="px-8 py-4 bg-white hover:bg-black hover:text-white border-2 border-white text-black font-headline font-black text-sm uppercase tracking-widest flex items-center gap-4 transition-none disabled:opacity-50"
                 >
                   {isSubmitted ? (
                     <>
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>Synchronized with Central Intelligence!</span>
+                      <CheckCircle2 className="w-5 h-5" />
+                      <span>SYNCHRONIZED!</span>
                     </>
                   ) : isSubmitting ? (
                     <>
-                      <RotateCw className="w-4 h-4 animate-spin" />
-                      <span>Transmitting Report...</span>
+                      <RotateCw className="w-5 h-5 animate-spin" />
+                      <span>TRANSMITTING...</span>
                     </>
                   ) : (
                     <>
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>Authorize & Synchronize Cleanup</span>
+                      <CheckCircle2 className="w-5 h-5" />
+                      <span>AUTHORIZE & SYNC</span>
                     </>
                   )}
                 </button>

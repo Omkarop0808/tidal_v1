@@ -34,38 +34,38 @@ export const Header = ({ onToggleMobile }: HeaderProps) => {
   ];
 
   return (
-    <header className="fixed top-0 lg:left-72 left-0 right-0 h-16 bg-background/80 backdrop-blur-xl z-40 flex items-center justify-between px-4 sm:px-6 border-b border-outline-variant/30">
+    <header className="fixed top-0 lg:left-72 left-0 right-0 h-16 bg-[#000000] z-40 flex items-center justify-between px-4 sm:px-6 border-b-2 border-[#333333] font-mono">
       
       {/* Left: Hamburger (Mobile) + Breadcrumb/Sector */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <button 
           onClick={onToggleMobile}
-          className="lg:hidden p-2 rounded-xl text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors"
+          className="lg:hidden p-2 border border-[#333333] text-white hover:bg-[#ff4d00] hover:text-black hover:border-[#ff4d00] transition-none"
           aria-label="Toggle Navigation"
         >
           <Menu className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center gap-2 text-xs">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container/90 border border-primary/20 text-on-surface shadow-sm">
-            <Globe2 className="w-3.5 h-3.5 text-primary" />
-            <span className="font-semibold text-primary">Mumbai Coast</span>
-            <ChevronRight className="w-3 h-3 text-on-surface-variant" />
-            <span className="text-on-surface-variant font-mono">Sector 04</span>
+        <div className="flex items-center gap-3 text-xs uppercase font-bold tracking-widest">
+          <div className="flex items-center gap-2 px-3 py-1.5 border border-[#333333] bg-[#111111] text-white">
+            <Globe2 className="w-3.5 h-3.5 text-[#ff4d00]" />
+            <span>MUMBAI COAST</span>
+            <ChevronRight className="w-3 h-3 text-[#525252]" />
+            <span className="text-[#a3a3a3]">SEC_04</span>
           </div>
 
-          <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-low border border-outline-variant/40 text-[11px] font-mono text-emerald-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            Telemetry Synced
+          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 border border-[#333333] bg-[#111111] text-white">
+            <span className="w-2 h-2 bg-white animate-pulse"></span>
+            TELEMETRY SYNCED
           </div>
         </div>
       </div>
 
       {/* Right: Time, Notifications, Settings, User avatar */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         {/* Real-time Marine Chronometer */}
-        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container/60 border border-outline-variant/30 text-xs font-mono text-on-surface-variant">
-          <Clock className="w-3.5 h-3.5 text-primary" />
+        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 border border-[#333333] bg-[#111111] text-white text-xs font-bold tracking-widest">
+          <Clock className="w-3.5 h-3.5 text-[#ff4d00]" />
           <span>{time || '00:00:00 UTC'}</span>
         </div>
 
@@ -73,37 +73,38 @@ export const Header = ({ onToggleMobile }: HeaderProps) => {
         <div className="relative">
           <button 
             onClick={() => setShowNotifications(!showNotifications)}
-            className={`relative p-2 rounded-xl border transition-all ${
+            className={`relative p-2 border transition-none flex items-center justify-center ${
               showNotifications 
-                ? 'bg-primary/10 border-primary text-primary' 
-                : 'bg-surface-container/60 border-outline-variant/30 text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
+                ? 'bg-[#ff4d00] border-[#ff4d00] text-black' 
+                : 'bg-[#111111] border-[#333333] text-white hover:border-white'
             }`}
             aria-label="View Notifications"
           >
             <Bell className="w-4 h-4" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+            <span className="absolute top-1 right-1 w-2 h-2 bg-white border border-black animate-pulse"></span>
           </button>
 
           {/* Notifications Dropdown Drawer */}
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-surface-container-low/95 backdrop-blur-2xl border border-outline-variant/50 shadow-2xl p-4 flex flex-col gap-3 z-50">
-              <div className="flex items-center justify-between pb-2 border-b border-outline-variant/30">
-                <span className="font-headline font-bold text-sm text-on-surface flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-primary" />
+            <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-[#000000] border-2 border-[#333333] p-0 flex flex-col z-50">
+              <div className="flex items-center justify-between p-3 border-b-2 border-[#333333] bg-[#111111]">
+                <span className="font-headline font-bold text-sm text-white uppercase flex items-center gap-2 tracking-widest">
+                  <AlertTriangle className="w-4 h-4 text-[#ff4d00]" />
                   Tactical Alerts (3)
                 </span>
-                <span className="text-[10px] font-mono text-primary uppercase cursor-pointer hover:underline">Mark all read</span>
+                <span className="text-[10px] text-[#a3a3a3] uppercase cursor-pointer hover:text-white">CLEAR</span>
               </div>
-              <div className="flex flex-col gap-2 max-h-72 overflow-y-auto">
+              
+              <div className="flex flex-col max-h-72 overflow-y-auto">
                 {notifications.map(n => (
-                  <div key={n.id} className="p-3 rounded-xl bg-surface-container/80 border border-outline-variant/30 hover:border-primary/40 transition-colors flex flex-col gap-1 text-xs">
-                    <div className="flex items-center justify-between font-semibold">
-                      <span className={n.type === 'critical' ? 'text-error' : n.type === 'warning' ? 'text-warning' : 'text-primary'}>
+                  <div key={n.id} className="p-4 border-b border-[#222222] hover:bg-[#111111] transition-none flex flex-col gap-2">
+                    <div className="flex items-center justify-between font-bold uppercase text-xs">
+                      <span className={n.type === 'critical' ? 'text-[#ff4d00]' : n.type === 'warning' ? 'text-white' : 'text-[#a3a3a3]'}>
                         {n.title}
                       </span>
-                      <span className="text-[10px] font-mono text-on-surface-variant">{n.time}</span>
+                      <span className="text-[9px] text-[#525252] tracking-widest">{n.time}</span>
                     </div>
-                    <p className="text-[11px] text-on-surface-variant leading-relaxed">{n.desc}</p>
+                    <p className="text-[10px] text-[#a3a3a3] leading-relaxed uppercase">{n.desc}</p>
                   </div>
                 ))}
               </div>
@@ -113,18 +114,12 @@ export const Header = ({ onToggleMobile }: HeaderProps) => {
 
         {/* Quick Tools */}
         <button 
-          className="p-2 rounded-xl bg-surface-container/60 border border-outline-variant/30 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all"
+          className="p-2 border border-[#333333] bg-[#111111] text-white hover:border-white transition-none"
           title="Sector Config"
         >
           <SlidersHorizontal className="w-4 h-4" />
         </button>
 
-        {/* User Avatar */}
-        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-secondary p-0.5 flex items-center justify-center cursor-pointer shadow-sm hover:scale-105 transition-transform">
-          <div className="w-full h-full rounded-full bg-surface flex items-center justify-center text-primary text-xs font-bold font-mono">
-            AS
-          </div>
-        </div>
       </div>
     </header>
   );

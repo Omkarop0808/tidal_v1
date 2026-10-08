@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { 
   X, 
-  Sparkles, 
+  Square, 
   Anchor, 
-  Clock, 
-  Weight, 
   MapPin, 
   CheckCircle2, 
   Send
 } from 'lucide-react';
+import { api } from '../../lib/api';
 
 interface DispatchPlanModalProps {
   isOpen: boolean;
@@ -27,22 +25,22 @@ interface DispatchAssignment {
 
 const mockAssignments: DispatchAssignment[] = [
   {
-    vessel_name: 'Autonomous Skimmer SKM-01',
-    target_zone: 'Zone A: Versova Creek',
+    vessel_name: 'SKM-01 [AUTO]',
+    target_zone: 'VERSOVA CREEK',
     eta_hours: 1.2,
     estimated_recovery_kg: 380,
     reasoning: 'Proximity to high-velocity outflow channel maximizes intercept rate before debris touches beach sand.'
   },
   {
-    vessel_name: 'Autonomous Skimmer SKM-02',
-    target_zone: 'Zone B: Juhu Beach',
+    vessel_name: 'SKM-02 [AUTO]',
+    target_zone: 'JUHU BEACH',
     eta_hours: 2.4,
     estimated_recovery_kg: 290,
     reasoning: 'Tidal convergence zone will accumulate buoyant PET bottles during next 4 hours.'
   },
   {
-    vessel_name: 'Tactical Squad T-BRAVO',
-    target_zone: 'Zone C: Bandra Channel',
+    vessel_name: 'T-BRAVO SQUAD',
+    target_zone: 'BANDRA CHANNEL',
     eta_hours: 0.8,
     estimated_recovery_kg: 180,
     reasoning: 'Offshore boom anchor point stabilization and surface debris scooping.'
@@ -59,14 +57,13 @@ export const DispatchPlanModal: React.FC<DispatchPlanModalProps> = ({ isOpen, on
       setLoading(true);
       setDispatched(false);
 
-      axios.get('http://localhost:8000/api/v1/hotspots/spatial')
-        .then(res => {
-          const hotspots = res.data;
-          return axios.post('http://localhost:8000/api/v1/dispatch/optimize', { hotspots });
+      api.getHotspots()
+        .then(hotspots => {
+          return api.optimizeDispatch(hotspots);
         })
         .then(res => {
-          if (res.data && Array.isArray(res.data) && res.data.length > 0) {
-            setAssignments(res.data);
+          if (res && Array.isArray(res) && res.length > 0) {
+            setAssignments(res);
           } else {
             setAssignments(mockAssignments);
           }
@@ -91,86 +88,82 @@ export const DispatchPlanModal: React.FC<DispatchPlanModalProps> = ({ isOpen, on
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md">
-      <div className="bg-surface-container-low w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden border border-primary/30 flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
+      <div className="bg-[#050505] w-full max-w-4xl border-2 border-[#333333] flex flex-col max-h-[90vh]">
         
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-outline-variant/30 bg-surface-container/50">
-          <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center text-primary shadow-glow-sm">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-on-surface font-headline font-bold text-lg">AI Autonomous Fleet Dispatch Optimizer</h2>
-              <p className="text-on-surface-variant font-mono text-xs">Hungarian Optimal Assignment Algorithm</p>
+        <div className="flex items-center justify-between p-6 border-b-2 border-[#333333] bg-[#111111]">
+          <div className="flex items-center gap-4">
+            <Square className="w-6 h-6 fill-white text-white" />
+            <div className="flex flex-col gap-1">
+              <h2 className="text-white font-headline font-black text-2xl uppercase tracking-tighter">AI Fleet Dispatch</h2>
+              <p className="text-[#a3a3a3] font-mono text-[10px] uppercase font-bold tracking-widest">Hungarian Optimal Assignment Algorithm</p>
             </div>
           </div>
           <button 
             onClick={onClose}
-            className="w-9 h-9 rounded-xl hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors border border-outline-variant/30"
+            className="w-10 h-10 bg-[#000000] hover:bg-[#ff4d00] border-2 border-[#333333] hover:border-[#ff4d00] flex items-center justify-center text-white hover:text-black transition-none"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
           {loading ? (
-            <div className="flex flex-col items-center justify-center h-64 gap-4">
-              <div className="w-12 h-12 rounded-full border-3 border-surface-container-highest border-t-primary animate-spin"></div>
-              <div className="text-center font-mono">
-                <h3 className="font-headline font-semibold text-sm text-on-surface">Computing Optimal Fleet Vectors...</h3>
-                <p className="text-xs text-on-surface-variant mt-1">Evaluating vessel ranges, battery telemetry, and risk tiers</p>
+            <div className="flex flex-col items-center justify-center h-64 gap-6">
+              <Square className="w-12 h-12 text-[#ff4d00] animate-spin border-4 border-[#ff4d00] fill-transparent" />
+              <div className="text-center font-mono flex flex-col gap-2">
+                <h3 className="font-headline font-black text-xl text-white uppercase tracking-tighter">Computing Optimal Vectors...</h3>
+                <p className="text-[10px] text-[#a3a3a3] uppercase font-bold tracking-widest">Evaluating vessel ranges, battery telemetry, and risk tiers</p>
               </div>
             </div>
           ) : (
             <>
               {/* Mission Summary Pill */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-primary/10 border border-primary/30">
-                <div className="flex items-center gap-2.5 text-primary font-mono text-xs font-semibold">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>3 Intercept Missions Computed • 850 kg Estimated Total Debris Recovery</span>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 border-2 border-[#ff4d00] bg-[#111111]">
+                <div className="flex items-center gap-3 text-[#ff4d00] font-mono text-[10px] font-bold uppercase tracking-widest">
+                  <CheckCircle2 className="w-5 h-5" />
+                  <span>3 MISSIONS COMPUTED • 850 KG TOTAL RECOVERY</span>
                 </div>
-                <span className="text-[11px] font-mono px-2.5 py-1 rounded bg-surface text-on-surface border border-primary/20">
-                  Total Travel: 38.4 km
+                <span className="text-[10px] font-mono px-3 py-2 bg-[#ff4d00] text-black font-bold uppercase tracking-widest">
+                  TRAVEL: 38.4 KM
                 </span>
               </div>
 
               {/* Vessel Assignment Cards */}
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 gap-[1px] bg-[#333333] border-2 border-[#333333]">
                 {assignments.map((assignment, idx) => (
                   <div 
                     key={idx} 
-                    className="p-5 rounded-2xl bg-surface-container/70 border border-outline-variant/40 hover:border-primary/40 transition-all flex flex-col gap-4"
+                    className="p-6 bg-[#000000] hover:bg-[#111111] transition-none flex flex-col gap-6 group"
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-surface-container-high border border-outline-variant/30 flex items-center justify-center text-primary">
-                          <Anchor className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <h4 className="font-headline font-bold text-sm text-on-surface">{assignment.vessel_name}</h4>
-                          <span className="text-xs font-mono text-primary font-semibold flex items-center gap-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="flex items-center gap-4">
+                        <Anchor className="w-6 h-6 text-white" />
+                        <div className="flex flex-col gap-1">
+                          <h4 className="font-headline font-black text-xl text-white uppercase tracking-tighter group-hover:text-[#ff4d00]">{assignment.vessel_name}</h4>
+                          <span className="text-[10px] font-mono text-[#a3a3a3] font-bold uppercase tracking-widest flex items-center gap-2">
                             <MapPin className="w-3 h-3" />
                             {assignment.target_zone}
                           </span>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 font-mono text-xs">
-                        <span className="px-3 py-1 rounded-xl bg-surface-container-high border border-outline-variant/30 text-on-surface-variant flex items-center gap-1.5">
-                          <Clock className="w-3 h-3 text-primary" />
-                          ETA: <strong className="text-on-surface">{assignment.eta_hours}h</strong>
+                      <div className="flex flex-col gap-2 font-mono text-[10px] uppercase font-bold tracking-widest text-[#a3a3a3]">
+                        <span className="flex items-center justify-between gap-4 border-b border-[#333333] pb-1">
+                          <span>ETA</span>
+                          <span className="text-white">{assignment.eta_hours}H</span>
                         </span>
-                        <span className="px-3 py-1 rounded-xl bg-surface-container-high border border-outline-variant/30 text-on-surface-variant flex items-center gap-1.5">
-                          <Weight className="w-3 h-3 text-secondary" />
-                          Capacity: <strong className="text-secondary">{assignment.estimated_recovery_kg} kg</strong>
+                        <span className="flex items-center justify-between gap-4 border-b border-[#333333] pb-1">
+                          <span>CAPACITY</span>
+                          <span className="text-white">{assignment.estimated_recovery_kg} KG</span>
                         </span>
                       </div>
                     </div>
 
-                    <div className="p-3 rounded-xl bg-surface-container-low border border-outline-variant/30 text-xs text-on-surface-variant leading-relaxed">
-                      <strong className="text-primary font-mono text-[11px] uppercase mr-1.5">AI Rationale:</strong>
+                    <div className="p-4 bg-[#111111] border-l-4 border-l-[#ff4d00] text-[10px] font-mono uppercase font-bold tracking-widest text-[#a3a3a3] leading-relaxed">
+                      <strong className="text-white mr-2">AI RATIONALE:</strong>
                       {assignment.reasoning}
                     </div>
                   </div>
@@ -181,28 +174,28 @@ export const DispatchPlanModal: React.FC<DispatchPlanModalProps> = ({ isOpen, on
         </div>
 
         {/* Footer Actions */}
-        <div className="p-6 border-t border-outline-variant/30 bg-surface-container/40 flex items-center justify-between gap-4">
+        <div className="p-6 border-t-2 border-[#333333] bg-[#111111] flex items-center justify-between gap-4">
           <button 
             onClick={onClose}
-            className="px-5 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-xs font-mono text-on-surface-variant transition-colors"
+            className="px-6 py-4 bg-[#000000] hover:bg-white text-[#a3a3a3] hover:text-black font-headline font-bold text-sm uppercase tracking-widest border-2 border-[#333333] hover:border-white transition-none"
           >
-            Cancel
+            CANCEL
           </button>
 
           <button 
             onClick={handleConfirmDispatch}
             disabled={loading || dispatched}
-            className="px-6 py-3 rounded-xl bg-gradient-to-r from-primary to-secondary text-on-primary font-headline font-bold text-xs sm:text-sm hover:shadow-glow transition-all duration-300 flex items-center gap-2 shadow-lg disabled:opacity-50"
+            className="px-8 py-4 bg-[#ff4d00] hover:bg-white text-black font-headline font-black text-sm uppercase tracking-widest transition-none flex items-center gap-4 disabled:opacity-50"
           >
             {dispatched ? (
               <>
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Orders Dispatched to Fleet!</span>
+                <CheckCircle2 className="w-5 h-5" />
+                <span>ORDERS DISPATCHED!</span>
               </>
             ) : (
               <>
-                <Send className="w-4 h-4" />
-                <span>Authorize & Transmit Fleet Orders</span>
+                <Send className="w-5 h-5" />
+                <span>TRANSMIT FLEET ORDERS</span>
               </>
             )}
           </button>

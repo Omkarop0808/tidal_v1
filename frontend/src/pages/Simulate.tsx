@@ -1,15 +1,6 @@
-/*
-THESIS: TIDAL Dual-Mode Hydrodynamic Digital Twin visualizes unmitigated baseline beaching drift against active offshore barrier & skimmer countermeasures in real-time.
-OWN-WORLD: Deep abyssal bathymetric backdrop (#03070a), extruded Mumbai coastal topography mesh (#0d1b2a), bioluminescent cyan (#00e5ff) particle streams, coral hazard alerts (#ff3b30), and amber boom barriers (#f59e0b).
-STORY: Operators instantly configure coastal debris releases and weather forces, execute Monte Carlo physics, and evaluate exact percentage reductions in shoreline contamination.
-FIRST VIEWPORT: Asymmetric tactical cockpit with parametric input matrix, high-fidelity 3D coastal viewport with dual-particle streams, and side-by-side mitigation delta comparison cards.
-FORM: 72-Hour Hydrodynamic Dual-Track Twin (Seed: 3e22ff0d).
-FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance.
-*/
-
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Activity, 
   Save, 
@@ -17,7 +8,6 @@ import {
   CloudRain, 
   Play, 
   Pause, 
-  Sparkles, 
   Shield, 
   ShieldCheck, 
   RotateCw, 
@@ -25,10 +15,13 @@ import {
   CheckCircle2, 
   XCircle, 
   MapPin, 
-  ArrowRight
+  ArrowRight,
+  Square,
+  Cpu
 } from 'lucide-react';
 import { Scene } from '../components/Map3D/Scene';
 import { useSim, OUTFALL_LOCATIONS } from '../store';
+import { api } from '../lib/api';
 
 export const Simulate = () => {
   const selectedLocation = useSim(state => state.selectedLocation);
@@ -55,7 +48,6 @@ export const Simulate = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // Playback timer animation
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
     if (isPlaying && trajectory.length > 0) {
@@ -66,7 +58,6 @@ export const Simulate = () => {
     return () => clearInterval(interval);
   }, [isPlaying, currentFrameIndex, trajectory.length, setCurrentFrame]);
 
-  // Execute Simulation API
   const runSimulation = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -74,11 +65,13 @@ export const Simulate = () => {
         wind_speed: windSpeed,
         rainfall_increase: precipitation,
         barrier_efficiency: isBarrierActive ? barrierEfficiency : 0,
-        cleanup_teams: cleanupTeams
+        cleanup_teams: cleanupTeams,
+        lat: selectedLocation.lat,
+        lon: selectedLocation.lon
       };
       
-      const response = await axios.post('http://localhost:8000/api/v1/simulate/scenario', payload);
-      const data = response.data;
+      const response = await api.runSimulation(payload);
+      const data = response;
       
       if (data.trajectory_intervention) {
         setTrajectory(data.trajectory_intervention);
@@ -91,9 +84,8 @@ export const Simulate = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [windSpeed, precipitation, barrierEfficiency, isBarrierActive, cleanupTeams, setTrajectory, setTrajectoryBaseline]);
+  }, [windSpeed, precipitation, barrierEfficiency, isBarrierActive, cleanupTeams, setTrajectory, setTrajectoryBaseline, selectedLocation.lat, selectedLocation.lon]);
 
-  // Initial load
   useEffect(() => {
     if (trajectory.length === 0) {
       runSimulation();
@@ -105,12 +97,31 @@ export const Simulate = () => {
     setSelectedLocation(loc);
   };
 
+  const [toastMessage, setToastMessage] = useState('');
+
   const handleSaveScenario = () => {
+    const payload = {
+      wind_speed: windSpeed,
+      rainfall_increase: precipitation,
+      barrier_efficiency: isBarrierActive ? barrierEfficiency : 0,
+      cleanup_teams: cleanupTeams,
+      lat: selectedLocation.lat,
+      lon: selectedLocation.lon,
+      savedAt: new Date().toISOString()
+    };
+    
+    try {
+      const existing = JSON.parse(localStorage.getItem('tidal_saved_scenarios') || '[]');
+      localStorage.setItem('tidal_saved_scenarios', JSON.stringify([...existing, payload]));
+    } catch {
+      localStorage.setItem('tidal_saved_scenarios', JSON.stringify([payload]));
+    }
+
     setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
+    setToastMessage(`CAPTURED: /VOL/SCENARIOS/${Date.now().toString().slice(-6)}.JSON`);
+    setTimeout(() => setSaveSuccess(false), 4000);
   };
 
-  // Compute live frame metrics
   const activeFrame = trajectory[currentFrameIndex] || { hour: 0, beached_percent: 0 };
   const baselineFrame = trajectoryBaseline[currentFrameIndex] || { hour: 0, beached_percent: 0 };
 
@@ -122,74 +133,78 @@ export const Simulate = () => {
     : 0;
 
   return (
-    <div className="flex flex-col w-full text-on-surface px-4 sm:px-8 lg:px-12 py-8 gap-8 max-w-[1600px] mx-auto">
+    <div className="flex flex-col w-full text-white bg-[#000000] min-h-[calc(100vh-4rem)] border-x-2 border-[#333333]">
       
       {/* Header Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-outline-variant/30">
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-center gap-2 text-xs font-mono text-primary uppercase tracking-wider">
-            <Activity className="w-3.5 h-3.5" />
-            <span>Hydrodynamic Digital Twin // Dual-Track Monte Carlo Engine</span>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 p-8 border-b-2 border-[#333333] bg-[#111111]">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-3 text-[10px] font-mono text-white uppercase tracking-widest font-bold">
+            <Square className="w-3 h-3 fill-white text-white" />
+            <span>HYDRODYNAMIC TWIN // MONTE CARLO ENGINE</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-headline font-bold text-on-surface tracking-tight">
-            Marine Debris Drift & Interception Simulator
+          <h1 className="text-4xl sm:text-5xl font-headline font-black text-white uppercase tracking-tighter">
+            Drift & Interception
           </h1>
         </div>
 
-        <div className="flex items-center gap-3">
-          <span className="px-3.5 py-1.5 rounded-xl bg-surface-container border border-outline-variant/40 text-on-surface-variant font-mono text-xs">
-            Zone: <strong className="text-primary">{selectedLocation.name.split(' ')[0]}</strong>
+        <div className="flex items-center gap-4">
+          <span className="px-4 py-2 bg-black border-2 border-[#333333] text-[#a3a3a3] font-mono text-[10px] uppercase font-bold tracking-widest">
+            ZONE: <strong className="text-white">{selectedLocation.name.split(' ')[0]}</strong>
           </span>
 
           <button 
             onClick={handleSaveScenario}
-            className="px-4 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-headline font-semibold text-xs transition-all flex items-center gap-2 border border-outline-variant/40"
+            className="px-6 py-2 bg-white hover:bg-black text-black hover:text-white border-2 border-white font-headline font-black text-xs uppercase tracking-widest transition-none flex items-center gap-3"
           >
-            {saveSuccess ? (
-              <>
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span className="text-emerald-400 font-mono">Scenario Saved</span>
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4 text-primary" />
-                <span>Save Scenario</span>
-              </>
-            )}
+            <Save className="w-4 h-4" />
+            <span>SAVE SCENARIO</span>
           </button>
         </div>
       </div>
 
-      {/* Main 2-Column Cockpit Layout: Left Controls (5 cols) & Right 3D Viewport (7 cols) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <AnimatePresence>
+        {saveSuccess && (
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            className="fixed top-24 right-8 z-50 p-6 bg-white text-black border-2 border-black flex items-center gap-4 shadow-2xl"
+          >
+            <CheckCircle2 className="w-6 h-6" />
+            <div className="flex flex-col">
+              <span className="font-headline font-black text-sm uppercase">CONFIGURATION PERSISTED</span>
+              <span className="font-mono text-[10px] font-bold">{toastMessage}</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-[1px] bg-[#333333] flex-1">
         
         {/* Left Column: Parametric Controls & Countermeasures (5 cols) */}
-        <div className="lg:col-span-5 flex flex-col gap-6">
+        <div className="lg:col-span-5 flex flex-col gap-[1px] bg-[#333333]">
           
-          {/* Release Configuration Card */}
-          <div className="p-6 rounded-3xl bg-surface-container-low border border-outline-variant/40 backdrop-blur-xl flex flex-col gap-5 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-outline-variant/30">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
-                  <MapPin className="w-4 h-4" />
-                </div>
-                <div>
-                  <h2 className="font-headline font-bold text-sm text-on-surface">Release Vector & Outfall Origin</h2>
-                  <span className="text-[10px] font-mono text-on-surface-variant">Step 1: Set Source Point</span>
+          <div className="p-8 bg-[#000000] flex flex-col gap-6">
+            <div className="flex items-center justify-between pb-4 border-b-2 border-[#333333]">
+              <div className="flex items-center gap-4">
+                <MapPin className="w-6 h-6 text-white" />
+                <div className="flex flex-col gap-1">
+                  <h2 className="font-headline font-black text-lg uppercase tracking-tighter">OUTFALL ORIGIN</h2>
+                  <span className="text-[10px] font-mono font-bold tracking-widest text-[#a3a3a3] uppercase">STEP 1: SOURCE POINT</span>
                 </div>
               </div>
-              <span className="text-[10px] font-mono text-primary font-bold px-2 py-0.5 rounded bg-primary/10 border border-primary/20">
+              <span className="text-[10px] font-mono text-black font-bold px-3 py-1 bg-white uppercase">
                 CONFIG 01
               </span>
             </div>
 
-            <div className="flex flex-col gap-4 text-xs font-mono">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-on-surface-variant uppercase text-[10px] font-semibold">Outfall Release Point</label>
+            <div className="flex flex-col gap-6 text-[10px] font-mono uppercase font-bold tracking-widest">
+              <div className="flex flex-col gap-3">
+                <label className="text-[#a3a3a3]">OUTFALL RELEASE POINT</label>
                 <select 
                   value={selectedLocation.id}
                   onChange={handleLocationChange}
-                  className="w-full bg-surface-container border border-outline-variant/40 text-on-surface px-3.5 py-2.5 rounded-xl appearance-none outline-none focus:border-primary transition-colors"
+                  className="w-full bg-[#111111] border-2 border-[#333333] focus:border-white text-white px-4 py-4 rounded-none appearance-none outline-none transition-none"
                 >
                   {OUTFALL_LOCATIONS.map(loc => (
                     <option key={loc.id} value={loc.id}>
@@ -199,60 +214,57 @@ export const Simulate = () => {
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-on-surface-variant uppercase text-[10px] font-semibold">Debris Mass (kg)</label>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-3">
+                  <label className="text-[#a3a3a3]">DEBRIS MASS (KG)</label>
                   <input 
                     type="number" 
                     value={debrisMassKg}
                     onChange={(e) => setScenario({ debrisMassKg: Math.max(10, parseInt(e.target.value) || 100) })}
-                    className="w-full bg-surface-container border border-outline-variant/40 text-on-surface px-3.5 py-2.5 rounded-xl outline-none focus:border-primary transition-colors font-mono" 
+                    className="w-full bg-[#111111] border-2 border-[#333333] focus:border-white text-white px-4 py-4 rounded-none outline-none transition-none" 
                   />
                 </div>
                 
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-on-surface-variant uppercase text-[10px] font-semibold">Polymer Classification</label>
+                <div className="flex flex-col gap-3">
+                  <label className="text-[#a3a3a3]">POLYMER CLASS</label>
                   <select 
                     value={materialType}
                     onChange={(e) => setScenario({ materialType: e.target.value })}
-                    className="w-full bg-surface-container border border-outline-variant/40 text-on-surface px-3.5 py-2.5 rounded-xl outline-none focus:border-primary transition-colors"
+                    className="w-full bg-[#111111] border-2 border-[#333333] focus:border-white text-white px-4 py-4 rounded-none outline-none transition-none appearance-none"
                   >
-                    <option>Mixed Polymers (PET / HDPE)</option>
-                    <option>Nylon Ghost Fishing Nets</option>
-                    <option>Micro-plastics (&lt; 5mm)</option>
-                    <option>Rigid High-Density Containers</option>
+                    <option>MIXED (PET / HDPE)</option>
+                    <option>NYLON NETS</option>
+                    <option>MICRO-PLASTICS (&lt; 5MM)</option>
+                    <option>RIGID CONTAINERS</option>
                   </select>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Environmental Force Modifiers Card */}
-          <div className="p-6 rounded-3xl bg-surface-container-low border border-outline-variant/40 backdrop-blur-xl flex flex-col gap-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-outline-variant/30">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-secondary/10 border border-secondary/20 flex items-center justify-center text-secondary">
-                  <Wind className="w-4 h-4" />
-                </div>
-                <div>
-                  <h2 className="font-headline font-bold text-sm text-on-surface">Hydrodynamic Ocean Forces</h2>
-                  <span className="text-[10px] font-mono text-on-surface-variant">Step 2: Weather & Currents</span>
+          <div className="p-8 bg-[#000000] flex flex-col gap-6">
+            <div className="flex items-center justify-between pb-4 border-b-2 border-[#333333]">
+              <div className="flex items-center gap-4">
+                <Wind className="w-6 h-6 text-[#ff4d00]" />
+                <div className="flex flex-col gap-1">
+                  <h2 className="font-headline font-black text-lg uppercase tracking-tighter">OCEAN FORCES</h2>
+                  <span className="text-[10px] font-mono font-bold tracking-widest text-[#a3a3a3] uppercase">STEP 2: CURRENTS</span>
                 </div>
               </div>
-              <span className="text-xs font-mono text-emerald-400 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+              <span className="text-[10px] font-mono text-[#ff4d00] flex items-center gap-2 font-bold uppercase">
+                <span className="w-2 h-2 bg-[#ff4d00] animate-pulse"></span>
                 ACTIVE
               </span>
             </div>
 
-            <div className="flex flex-col gap-3.5 font-mono text-xs">
-              <div className="flex flex-col gap-2 p-3.5 rounded-2xl bg-surface-container/70 border border-outline-variant/30">
+            <div className="flex flex-col gap-6 font-mono text-[10px] uppercase font-bold tracking-widest">
+              <div className="flex flex-col gap-4 p-6 bg-[#111111] border-2 border-[#333333]">
                 <div className="flex items-center justify-between">
-                  <span className="text-on-surface-variant flex items-center gap-1.5">
-                    <Wind className="w-3.5 h-3.5 text-primary" />
-                    Onshore Wind Velocity
+                  <span className="text-[#a3a3a3] flex items-center gap-3">
+                    <Wind className="w-4 h-4 text-white" />
+                    ONSHORE WIND VELOCITY
                   </span>
-                  <span className="text-primary font-bold">{windSpeed} km/h (SW Vector)</span>
+                  <span className="text-white text-lg">{windSpeed} KM/H (SW)</span>
                 </div>
                 <input 
                   type="range" 
@@ -260,17 +272,17 @@ export const Simulate = () => {
                   max="60" 
                   value={windSpeed} 
                   onChange={(e) => setScenario({ windSpeed: Number(e.target.value) })}
-                  className="w-full"
+                  className="w-full accent-white"
                 />
               </div>
 
-              <div className="flex flex-col gap-2 p-3.5 rounded-2xl bg-surface-container/70 border border-outline-variant/30">
+              <div className="flex flex-col gap-4 p-6 bg-[#111111] border-2 border-[#333333]">
                 <div className="flex items-center justify-between">
-                  <span className="text-on-surface-variant flex items-center gap-1.5">
-                    <CloudRain className="w-3.5 h-3.5 text-secondary" />
-                    Monsoon Storm Runoff Surge
+                  <span className="text-[#a3a3a3] flex items-center gap-3">
+                    <CloudRain className="w-4 h-4 text-white" />
+                    STORM RUNOFF SURGE
                   </span>
-                  <span className="text-secondary font-bold">+{precipitation} mm</span>
+                  <span className="text-white text-lg">+{precipitation} MM</span>
                 </div>
                 <input 
                   type="range" 
@@ -278,59 +290,51 @@ export const Simulate = () => {
                   max="100" 
                   value={precipitation} 
                   onChange={(e) => setScenario({ precipitation: Number(e.target.value) })}
-                  className="w-full"
+                  className="w-full accent-[#ff4d00]"
                 />
               </div>
             </div>
           </div>
 
-          {/* Defensive Countermeasures Card */}
-          <div className="p-6 rounded-3xl bg-surface-container-low border border-outline-variant/40 backdrop-blur-xl flex flex-col gap-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-outline-variant/30">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-                  <ShieldCheck className="w-4 h-4" />
-                </div>
-                <div>
-                  <h2 className="font-headline font-bold text-sm text-on-surface">Defensive Countermeasures</h2>
-                  <span className="text-[10px] font-mono text-on-surface-variant">Step 3: Tactical Booms & Fleet</span>
+          <div className="p-8 bg-[#000000] flex flex-col gap-6">
+            <div className="flex items-center justify-between pb-4 border-b-2 border-[#333333]">
+              <div className="flex items-center gap-4">
+                <ShieldCheck className="w-6 h-6 text-white" />
+                <div className="flex flex-col gap-1">
+                  <h2 className="font-headline font-black text-lg uppercase tracking-tighter">COUNTERMEASURES</h2>
+                  <span className="text-[10px] font-mono font-bold tracking-widest text-[#a3a3a3] uppercase">STEP 3: TACTICAL FLEET</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 font-mono text-xs">
-              {/* Barrier Toggle */}
-              <div className={`p-4 rounded-2xl border transition-all flex items-center justify-between cursor-pointer ${
+            <div className="flex flex-col gap-4 font-mono text-[10px] uppercase font-bold tracking-widest">
+              
+              <div className={`p-6 border-2 transition-none flex items-center justify-between cursor-pointer ${
                 isBarrierActive 
-                  ? 'bg-primary/10 border-primary/40 shadow-glow-sm' 
-                  : 'bg-surface-container/60 border-outline-variant/30'
+                  ? 'bg-white border-white text-black' 
+                  : 'bg-[#111111] border-[#333333] text-[#525252]'
               }`}
               onClick={() => setScenario({ isBarrierActive: !isBarrierActive })}
               >
-                <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
-                    isBarrierActive ? 'bg-primary text-on-primary font-bold' : 'bg-surface text-on-surface-variant'
-                  }`}>
-                    <Shield className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <span className="text-xs font-headline font-bold text-on-surface block">Offshore Containment Boom</span>
-                    <span className="text-[10px] text-on-surface-variant">Anchored barrier line traps buoyant plastics</span>
+                <div className="flex items-center gap-4">
+                  <Shield className="w-6 h-6" />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-headline font-black tracking-tighter block">OFFSHORE CONTAINMENT BOOM</span>
+                    <span className="text-[9px] opacity-70">ANCHORED BARRIER TRAPS PLASTICS</span>
                   </div>
                 </div>
-                <div className={`w-5 h-5 rounded-md border flex items-center justify-center ${
-                  isBarrierActive ? 'border-primary bg-primary' : 'border-outline'
+                <div className={`w-6 h-6 border-2 flex items-center justify-center ${
+                  isBarrierActive ? 'border-black' : 'border-[#525252]'
                 }`}>
-                  {isBarrierActive && <CheckCircle2 className="w-3.5 h-3.5 text-on-primary" />}
+                  {isBarrierActive && <CheckCircle2 className="w-4 h-4 text-black" />}
                 </div>
               </div>
 
-              {/* Barrier Efficiency Slider (if active) */}
               {isBarrierActive && (
-                <div className="p-3.5 rounded-2xl bg-surface-container/70 border border-outline-variant/30 flex flex-col gap-2">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-on-surface-variant">Boom Capture Efficiency:</span>
-                    <span className="text-primary font-bold">{barrierEfficiency}%</span>
+                <div className="p-6 bg-[#111111] border-2 border-white flex flex-col gap-4">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-[#a3a3a3]">BOOM CAPTURE EFFICIENCY:</span>
+                    <span className="text-white text-lg">{barrierEfficiency}%</span>
                   </div>
                   <input 
                     type="range" 
@@ -338,235 +342,252 @@ export const Simulate = () => {
                     max="90" 
                     value={barrierEfficiency} 
                     onChange={(e) => setScenario({ barrierEfficiency: Number(e.target.value) })}
-                    className="w-full"
+                    className="w-full accent-white"
                   />
                 </div>
               )}
 
-              {/* Skimmer Squads Count */}
-              <div className="p-3.5 rounded-2xl bg-surface-container/70 border border-outline-variant/30 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Anchor className="w-4 h-4 text-secondary" />
-                  <span className="text-xs text-on-surface">Autonomous Skimmer Squads:</span>
+              <div className="p-6 bg-[#111111] border-2 border-[#333333] flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Anchor className="w-5 h-5 text-white" />
+                  <span className="text-[#a3a3a3]">AUTO SKIMMER SQUADS:</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-4">
                   <button 
                     onClick={() => setScenario({ cleanupTeams: Math.max(2, cleanupTeams - 2) })}
-                    className="w-7 h-7 rounded-lg bg-surface-container-high text-on-surface flex items-center justify-center hover:bg-surface-bright"
+                    className="w-8 h-8 bg-black text-white border-2 border-[#333333] hover:border-white flex items-center justify-center transition-none"
                   >
                     -
                   </button>
-                  <span className="text-sm font-bold text-primary px-2">{cleanupTeams}</span>
+                  <span className="text-xl font-headline font-black text-white px-2">{cleanupTeams}</span>
                   <button 
                     onClick={() => setScenario({ cleanupTeams: Math.min(24, cleanupTeams + 2) })}
-                    className="w-7 h-7 rounded-lg bg-surface-container-high text-on-surface flex items-center justify-center hover:bg-surface-bright"
+                    className="w-8 h-8 bg-black text-white border-2 border-[#333333] hover:border-white flex items-center justify-center transition-none"
                   >
                     +
                   </button>
                 </div>
               </div>
 
-              {/* Execute Button */}
               <button 
                 onClick={runSimulation}
                 disabled={isLoading}
-                className="mt-2 w-full py-4 rounded-2xl bg-gradient-to-r from-primary to-secondary text-on-primary font-headline font-bold text-xs sm:text-sm tracking-wider uppercase flex items-center justify-center gap-2.5 hover:shadow-glow transition-all duration-300 disabled:opacity-50 shadow-lg"
+                className="mt-4 w-full py-6 bg-[#ff4d00] hover:bg-white text-black font-headline font-black text-lg uppercase tracking-tighter flex items-center justify-center gap-4 transition-none disabled:opacity-50 border-2 border-[#ff4d00] hover:border-white"
               >
                 {isLoading ? (
                   <>
-                    <RotateCw className="w-4 h-4 animate-spin" />
-                    <span>Recalculating Hydrodynamics...</span>
+                    <RotateCw className="w-6 h-6 animate-spin" />
+                    <span>CRUNCHING DYNAMICS...</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4" />
-                    <span>Execute Monte Carlo Simulation</span>
+                    <Play className="w-6 h-6 fill-current" />
+                    <span>EXECUTE MONTE CARLO</span>
                   </>
                 )}
               </button>
             </div>
+            
+            <div className="p-8 bg-[#000000] flex flex-col gap-6 border-t-2 border-[#333333]">
+              <div className="flex items-center gap-3 text-[#ff4d00]">
+                <Cpu className="w-5 h-5" />
+                <h3 className="font-headline font-black text-sm uppercase tracking-tighter">OCEAN-GPT SCENARIO ANALYSIS</h3>
+              </div>
+              <p className="text-[10px] font-mono text-[#a3a3a3] uppercase tracking-widest leading-relaxed">
+                {windSpeed > 30 
+                  ? `SEVERE WIND FORCES (${windSpeed} KM/H) ARE ACCELERATING DRIFT TOWARDS THE SHORE. ` 
+                  : `MODERATE WIND VECTORS (${windSpeed} KM/H) INDICATE STANDARD DRIFT PACING. `}
+                {precipitation > 20 
+                  ? `HEAVY RUNOFF SURGE (+${precipitation}MM) SIGNIFICANTLY INCREASES THE OVERALL DEBRIS LOAD. ` 
+                  : `NOMINAL RUNOFF DETECTED. `}
+                {isBarrierActive && barrierEfficiency > 60 
+                  ? `OFFSHORE BOOMS ARE HIGHLY EFFECTIVE (${barrierEfficiency}%), TRAPPING MAJOR VOLUMES BEFORE BEACHING. ` 
+                  : isBarrierActive 
+                  ? `BOOMS ARE ACTIVE BUT MAY LEAK DEBRIS UNDER CURRENT HYDRODYNAMIC STRESS. ` 
+                  : `NO OFFSHORE BARRIERS DEPLOYED. SHORELINE IS COMPLETELY EXPOSED TO INCOMING PLASTICS. `}
+                {cleanupTeams > 10
+                  ? `HEAVY SKIMMER FLEET PRESENCE (${cleanupTeams} SQUADS) ENSURES RAPID INTERCEPTION.`
+                  : `CURRENT FLEET OF ${cleanupTeams} SKIMMER SQUADS MAY BE OVERWHELMED IF CONTAINMENT FAILS.`}
+              </p>
+            </div>
+
           </div>
 
         </div>
 
-        {/* Right Column: 3D Digital Twin Viewport & Comparative Timeline (7 cols) */}
-        <div className="lg:col-span-7 flex flex-col gap-6">
+        {/* Right Column: 3D Digital Twin Viewport & Comparative Metrics Dashboard (7 cols) */}
+        <div className="lg:col-span-7 flex flex-col gap-[1px] bg-[#333333]">
           
-          {/* 3D WebGL Digital Twin Viewport */}
-          <div className="relative w-full h-[520px] rounded-3xl overflow-hidden bg-surface-container-lowest border border-outline-variant/40 shadow-2xl flex flex-col">
+          <div className="relative w-full h-[500px] bg-[#000000] flex flex-col">
             
-            {/* 3D Three.js Scene */}
-            <div className="absolute inset-0 z-0">
+            <div className="absolute inset-0 z-0 opacity-100">
               <Scene />
             </div>
             
-            {/* Top Floating HUD Overlay */}
-            <div className="relative z-20 p-4 flex items-center justify-between pointer-events-none">
-              <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-surface-container-low/90 backdrop-blur-md border border-outline-variant/50 text-xs font-mono text-primary font-semibold pointer-events-auto shadow-lg">
-                <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-                <span>MUMBAI BATHYMETRIC TWIN</span>
+            <div className="absolute top-4 left-4 z-30 max-w-xs bg-black border-l-4 border-[#ff4d00] p-4 pointer-events-none shadow-2xl">
+              <h4 className="text-[#ff4d00] font-headline font-black text-sm uppercase tracking-tighter mb-1">Purpose & Objective</h4>
+              <p className="text-[10px] font-mono text-white uppercase tracking-widest leading-relaxed">
+                This digital twin uses Monte-Carlo physics to simulate marine debris trajectories. It decides the optimal fleet dispatch configuration by predicting how unmitigated weather forces push plastics onto coastal targets.
+              </p>
+            </div>
+            
+            <div className="relative z-20 p-6 flex items-center justify-between pointer-events-none">
+              <div className="flex items-center gap-3 px-4 py-2 bg-black text-[10px] font-mono text-white font-bold tracking-widest uppercase border-2 border-[#333333] pointer-events-auto">
+                <Square className="w-3 h-3 fill-white" />
+                <span>MUMBAI TWIN</span>
               </div>
               
-              {/* Dual-Stream Legend */}
-              <div className="flex items-center gap-3 px-3.5 py-1.5 rounded-xl bg-surface-container-low/90 backdrop-blur-md border border-outline-variant/50 text-[11px] font-mono pointer-events-auto shadow-lg">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-red-500"></span>
-                  <span className="text-slate-300">Baseline Drift</span>
+              <div className="flex items-center gap-4 px-4 py-2 bg-black text-[10px] font-mono border-2 border-[#333333] pointer-events-auto font-bold uppercase tracking-widest">
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 bg-[#333333]"></span>
+                  <span className="text-[#a3a3a3]">BASELINE (GHOST DOTS)</span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#00e5ff]"></span>
-                  <span className="text-cyan-300 font-bold">Mitigated</span>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 bg-white"></span>
+                  <span className="text-white">MITIGATED (ACTIVE)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 bg-[#ff4d00]"></span>
+                  <span className="text-[#ff4d00]">TRAPPED / BEACHED</span>
                 </div>
               </div>
             </div>
             
-            {/* Floating Scrubber HUD at Bottom */}
-            <div className="relative z-20 mt-auto p-4 m-3 rounded-2xl bg-surface-container-low/95 backdrop-blur-2xl border border-outline-variant/50 flex flex-col gap-3 shadow-2xl">
-              <div className="flex items-center justify-between text-xs font-mono">
-                <div className="flex items-center gap-3">
+            <div className="relative z-20 mt-auto p-6 m-4 bg-black border-2 border-white flex flex-col gap-4">
+              <div className="flex items-center justify-between text-[10px] font-mono uppercase font-bold tracking-widest">
+                <div className="flex items-center gap-4">
                   <button 
                     onClick={togglePlay}
-                    className="w-9 h-9 rounded-xl bg-primary text-on-primary flex items-center justify-center hover:scale-105 transition-all shadow-glow-sm"
-                    aria-label={isPlaying ? 'Pause simulation' : 'Play simulation'}
+                    className="w-12 h-12 bg-white hover:bg-[#ff4d00] text-black flex items-center justify-center transition-none border-2 border-white hover:border-[#ff4d00]"
                   >
-                    {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
+                    {isPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current" />}
                   </button>
-                  <span className="text-primary font-bold text-sm">
-                    T + {activeFrame.hour}h Forecast Horizon
+                  <span className="text-white text-lg">
+                    T + {activeFrame.hour}H FORECAST
                   </span>
                 </div>
 
-                <div className="flex items-center gap-3 text-xs">
-                  <span className="text-on-surface-variant font-medium">
-                    Frame: {currentFrameIndex + 1} / {trajectory.length || 13}
+                <div className="flex items-center gap-3 text-[#a3a3a3]">
+                  <span>
+                    FRAME: {currentFrameIndex + 1} / {trajectory.length || 13}
                   </span>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-2">
                 <input 
                   type="range" 
                   min="0" 
                   max={Math.max(0, trajectory.length - 1)} 
                   value={currentFrameIndex} 
                   onChange={(e) => { setCurrentFrame(Number(e.target.value)); if (isPlaying) togglePlay(); }}
-                  className="w-full" 
+                  className="w-full accent-white" 
                 />
-                <div className="flex justify-between text-[10px] text-on-surface-variant font-mono px-1">
-                  <span>T+0h Release</span>
-                  <span>T+18h Outfall Surge</span>
-                  <span className="text-primary font-bold">T+36h Peak Beaching</span>
-                  <span>T+54h Deflection</span>
-                  <span>T+72h Final State</span>
+                <div className="flex justify-between text-[9px] text-[#525252] font-mono font-bold uppercase tracking-widest pt-1">
+                  <span>T+0H REL</span>
+                  <span>T+18H SURGE</span>
+                  <span className="text-white">T+36H PEAK</span>
+                  <span>T+54H DEFL</span>
+                  <span>T+72H END</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Side-by-Side Dual-Track Comparative Metrics Dashboard */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-[1px] bg-[#333333]">
             
-            {/* Baseline Unmitigated Card */}
-            <div className="p-5 rounded-3xl bg-surface-container-low/90 border border-error/30 backdrop-blur-xl flex flex-col gap-4 shadow-xl">
-              <div className="flex items-center justify-between pb-2 border-b border-error/20">
-                <div className="flex items-center gap-2">
-                  <XCircle className="w-4 h-4 text-error" />
-                  <h3 className="font-headline font-bold text-xs uppercase tracking-wider text-error">
-                    Unmitigated Baseline
+            <div className="p-8 bg-[#000000] flex flex-col gap-6">
+              <div className="flex items-center justify-between pb-4 border-b-2 border-[#333333]">
+                <div className="flex items-center gap-3 text-[#525252]">
+                  <XCircle className="w-5 h-5" />
+                  <h3 className="font-headline font-black text-sm uppercase tracking-tighter">
+                    UNMITIGATED BASELINE
                   </h3>
                 </div>
-                <span className="text-[10px] font-mono text-error font-bold px-2 py-0.5 rounded bg-error/10 border border-error/30">
+                <span className="text-[10px] font-mono text-black font-bold px-3 py-1 bg-[#525252] uppercase tracking-widest">
                   NO INTERVENTION
                 </span>
               </div>
 
-              <div className="flex items-baseline justify-between font-mono">
+              <div className="flex items-baseline justify-between font-mono uppercase font-bold tracking-widest">
                 <div>
-                  <span className="text-[10px] text-on-surface-variant uppercase block">Shoreline Beaching</span>
-                  <span className="font-headline font-bold text-3xl text-error">
+                  <span className="text-[10px] text-[#a3a3a3] block mb-2">SHORELINE BEACHING</span>
+                  <span className="font-headline font-black text-5xl text-[#525252]">
                     {baselineFrame.beached_percent.toFixed(1)}%
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] text-on-surface-variant uppercase block">Beached Mass</span>
-                  <span className="text-lg font-bold text-on-surface">{baselineBeachedKg} kg</span>
+                  <span className="text-[10px] text-[#a3a3a3] block mb-2">BEACHED MASS</span>
+                  <span className="text-2xl text-white">{baselineBeachedKg} KG</span>
                 </div>
               </div>
 
-              <p className="text-[11px] text-on-surface-variant leading-relaxed font-mono">
-                Debris disperses eastward into coastal surf zones, causing severe plastic accumulation at <strong className="text-error">{selectedLocation.name.split(' ')[0]}</strong>.
+              <p className="text-[10px] text-[#a3a3a3] font-mono uppercase font-bold tracking-widest leading-relaxed border-l-2 border-[#333333] pl-4 mt-2">
+                DEBRIS DISPERSES EASTWARD CAUSING SEVERE ACCUMULATION AT <strong className="text-white">{selectedLocation.name.split(' ')[0]}</strong>.
               </p>
             </div>
 
-            {/* Mitigated Intervention Card */}
-            <div className="p-5 rounded-3xl bg-surface-container-low/90 border border-primary/40 backdrop-blur-xl flex flex-col gap-4 shadow-xl shadow-glow-sm">
-              <div className="flex items-center justify-between pb-2 border-b border-primary/20">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-primary" />
-                  <h3 className="font-headline font-bold text-xs uppercase tracking-wider text-primary">
-                    Mitigated Intervention
+            <div className="p-8 bg-[#000000] flex flex-col gap-6 border-l-4 border-l-white">
+              <div className="flex items-center justify-between pb-4 border-b-2 border-[#333333]">
+                <div className="flex items-center gap-3 text-white">
+                  <CheckCircle2 className="w-5 h-5" />
+                  <h3 className="font-headline font-black text-sm uppercase tracking-tighter">
+                    MITIGATED INTERVENTION
                   </h3>
                 </div>
-                <span className="text-[10px] font-mono text-emerald-400 font-bold px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30">
+                <span className="text-[10px] font-mono text-black font-bold px-3 py-1 bg-white uppercase tracking-widest">
                   {avoidedPercent}% AVOIDED
                 </span>
               </div>
 
-              <div className="flex items-baseline justify-between font-mono">
+              <div className="flex items-baseline justify-between font-mono uppercase font-bold tracking-widest">
                 <div>
-                  <span className="text-[10px] text-on-surface-variant uppercase block">Offshore Capture</span>
-                  <span className="font-headline font-bold text-3xl text-primary text-glow">
+                  <span className="text-[10px] text-[#a3a3a3] block mb-2">OFFSHORE CAPTURE</span>
+                  <span className="font-headline font-black text-5xl text-white">
                     {(100 - activeFrame.beached_percent).toFixed(1)}%
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] text-on-surface-variant uppercase block">Captured Mass</span>
-                  <span className="text-lg font-bold text-emerald-400">{capturedOffshoreKg} kg</span>
+                  <span className="text-[10px] text-[#a3a3a3] block mb-2">CAPTURED MASS</span>
+                  <span className="text-2xl text-white">{capturedOffshoreKg} KG</span>
                 </div>
               </div>
 
-              <p className="text-[11px] text-on-surface-variant leading-relaxed font-mono">
-                Containment boom and autonomous skimmers trap debris offshore, protecting <strong className="text-primary">{avoidedPercent}%</strong> of the sensitive shoreline.
+              <p className="text-[10px] text-[#a3a3a3] font-mono uppercase font-bold tracking-widest leading-relaxed border-l-2 border-white pl-4 mt-2">
+                BOOM AND SKIMMERS TRAP DEBRIS OFFSHORE, PROTECTING <strong className="text-white">{avoidedPercent}%</strong> OF THE SHORELINE.
               </p>
             </div>
 
           </div>
 
-          {/* Concentration Curve & Action Link */}
-          <div className="p-6 rounded-3xl bg-surface-container-low border border-outline-variant/40 backdrop-blur-xl flex flex-col gap-4 shadow-xl">
+          <div className="p-8 bg-[#000000] flex flex-col gap-6">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-primary" />
-                <h3 className="font-headline font-bold text-sm text-on-surface">Debris Concentration Curve (kg/m³)</h3>
+              <div className="flex items-center gap-3 text-white">
+                <Activity className="w-5 h-5" />
+                <h3 className="font-headline font-black text-lg uppercase tracking-tighter">CONCENTRATION CURVE</h3>
               </div>
-              <span className="text-xs font-mono text-primary font-semibold">T+36h Peak Risk</span>
+              <span className="text-[10px] font-mono text-white font-bold uppercase tracking-widest">T+36H PEAK RISK</span>
             </div>
 
-            <div className="h-28 w-full bg-surface-container/60 rounded-2xl p-3 flex items-end justify-between gap-1 relative overflow-hidden border border-outline-variant/30 font-mono">
-              <svg className="absolute inset-0 w-full h-full p-3" preserveAspectRatio="none" viewBox="0 0 100 50">
-                <path d="M 0 44 Q 25 40, 50 12 T 100 4 L 100 50 L 0 50 Z" fill="url(#gradSimMain)" opacity="0.25"></path>
-                <path d="M 0 44 Q 25 40, 50 12 T 100 4" fill="none" stroke="#00e5ff" strokeWidth="2.5"></path>
-                <defs>
-                  <linearGradient id="gradSimMain" x1="0%" x2="0%" y1="0%" y2="100%">
-                    <stop offset="0%" stopColor="#00e5ff"></stop>
-                    <stop offset="100%" stopColor="transparent"></stop>
-                  </linearGradient>
-                </defs>
+            <div className="h-32 w-full bg-[#111111] border-2 border-[#333333] p-4 flex items-end justify-between relative overflow-hidden font-mono uppercase tracking-widest font-bold">
+              <svg className="absolute inset-0 w-full h-full p-4" preserveAspectRatio="none" viewBox="0 0 100 50">
+                <path d="M 0 44 Q 25 40, 50 12 T 100 4 L 100 50 L 0 50 Z" fill="#ffffff" opacity="0.1"></path>
+                <path d="M 0 44 Q 25 40, 50 12 T 100 4" fill="none" stroke="#ffffff" strokeWidth="2"></path>
               </svg>
-              <div className="absolute bottom-2 left-3 text-[10px] text-on-surface-variant">T+0h Baseline</div>
-              <div className="absolute bottom-2 right-3 text-[10px] text-primary font-bold">T+72h Steady State</div>
+              <div className="absolute bottom-4 left-4 text-[10px] text-[#a3a3a3]">T+0H BASELINE</div>
+              <div className="absolute bottom-4 right-4 text-[10px] text-white">T+72H STEADY STATE</div>
             </div>
 
-            <div className="flex items-center justify-between pt-2">
-              <span className="text-xs font-mono text-on-surface-variant">
-                Ready to allocate clean-up units to predicted zones?
+            <div className="flex items-center justify-between pt-4 border-t-2 border-[#333333]">
+              <span className="text-[10px] font-mono text-[#a3a3a3] uppercase font-bold tracking-widest">
+                ALLOCATE UNITS TO PREDICTED ZONES?
               </span>
               <Link 
                 to="/hotspots"
-                className="px-5 py-2.5 rounded-xl bg-primary text-on-primary font-headline font-bold text-xs flex items-center gap-2 hover:shadow-glow transition-all"
+                className="px-6 py-4 bg-white hover:bg-[#ff4d00] text-black font-headline font-black text-sm uppercase tracking-widest flex items-center gap-3 transition-none"
               >
-                <span>Deploy Fleet to Hotspots</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <span>DEPLOY TO HOTSPOTS</span>
+                <ArrowRight className="w-5 h-5" />
               </Link>
             </div>
           </div>

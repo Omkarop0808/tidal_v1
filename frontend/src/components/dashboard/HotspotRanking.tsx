@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
-import { ListOrdered, CheckCircle2 } from 'lucide-react';
+import { ListOrdered, CheckCircle2, Square } from 'lucide-react';
+import { api } from '../../lib/api';
 
 export interface Hotspot {
   zone_name: string;
@@ -39,134 +39,114 @@ export const HotspotRanking = ({
   useEffect(() => {
     const fetchHotspots = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/v1/hotspots/spatial');
-        if (response.data && response.data.length > 0) {
-          setHotspots(response.data);
+        const data = await api.getHotspots();
+        if (data && data.length > 0) {
+          setHotspots(data);
         }
       } catch (error) {
         setHotspots(MOCK_HOTSPOTS);
       }
     };
     fetchHotspots();
+    
+    const handleCleanup = () => {
+      fetchHotspots();
+    };
+    window.addEventListener('CleanupCompletedEvent', handleCleanup);
+
     const interval = setInterval(fetchHotspots, 10000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('CleanupCompletedEvent', handleCleanup);
+    };
   }, []);
 
   return (
-    <div className="lg:col-span-4 rounded-3xl bg-surface-container-low border border-outline-variant/40 backdrop-blur-xl p-5 sm:p-6 flex flex-col justify-between gap-5 shadow-2xl">
-      <div className="flex flex-col gap-4">
-        
-        {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-outline-variant/30">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
-              <ListOrdered className="w-4 h-4" />
-            </div>
-            <div>
-              <h3 className="font-headline font-bold text-sm text-on-surface">Hotspot Spatial Matrix</h3>
-              <span className="text-[10px] font-mono text-on-surface-variant uppercase">Full Mumbai Coastline</span>
-            </div>
+    <div className="flex flex-col h-full bg-[#050505] min-h-[500px]">
+      
+      {/* Header */}
+      <div className="flex items-center justify-between p-6 border-b-2 border-[#333333] bg-[#111111]">
+        <div className="flex items-center gap-4">
+          <ListOrdered className="w-5 h-5 text-white" />
+          <div className="flex flex-col">
+            <h3 className="font-headline font-black text-sm uppercase text-white tracking-widest">Hotspot Matrix</h3>
+            <span className="text-[10px] font-mono text-[#a3a3a3] uppercase font-bold tracking-widest">Mumbai Coastline</span>
           </div>
-          <span className="px-2.5 py-0.5 rounded-full bg-surface-container text-primary font-mono text-xs font-bold border border-outline-variant/30">
-            {hotspots.length} SECTORS
-          </span>
         </div>
-        
-        {/* Hotspots List */}
-        <div className="flex flex-col gap-2.5 max-h-[500px] overflow-y-auto pr-1">
-          {hotspots.map((hotspot, index) => {
-            const isCritical = hotspot.severity.toLowerCase() === 'critical';
-            const isHigh = hotspot.severity.toLowerCase() === 'high';
-            const isSelected = selectedZoneIndex === index;
+        <span className="px-3 py-1 bg-white text-black font-mono text-[10px] uppercase font-bold tracking-widest">
+          {hotspots.length} SECTORS
+        </span>
+      </div>
+      
+      {/* Hotspots List */}
+      <div className="flex flex-col overflow-y-auto max-h-[550px]">
+        {hotspots.map((hotspot, index) => {
+          const isCritical = hotspot.severity.toLowerCase() === 'critical';
+          const isSelected = selectedZoneIndex === index;
 
-            return (
-              <div 
-                key={index} 
-                onClick={() => onSelectZone?.(index)}
-                className={`p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col gap-2 relative overflow-hidden ${
-                  isSelected 
-                    ? isCritical 
-                      ? 'bg-error/10 border-error shadow-glow-error' 
-                      : 'bg-primary/10 border-primary shadow-glow-sm'
-                    : isCritical
-                    ? 'bg-surface-container/70 border-error/30 hover:border-error/60'
-                    : isHigh
-                    ? 'bg-surface-container/70 border-warning/30 hover:border-warning/60'
-                    : 'bg-surface-container/70 border-outline-variant/30 hover:border-primary/40'
-                }`}
-              >
-                {/* Zone Name & Severity Badge */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${
-                      isFleetDispatched 
-                        ? 'bg-emerald-400 animate-pulse' 
-                        : isCritical 
-                        ? 'bg-error animate-ping' 
-                        : isHigh 
-                        ? 'bg-warning' 
-                        : 'bg-secondary'
-                    }`}></span>
-                    <span className="font-headline font-semibold text-xs text-on-surface">
-                      Zone {String.fromCharCode(65 + index)}: {hotspot.zone_name}
-                    </span>
-                  </div>
-
-                  {isFleetDispatched ? (
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase font-bold tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
-                      <CheckCircle2 className="w-2.5 h-2.5" />
-                      INTERCEPTING
-                    </span>
-                  ) : (
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-mono uppercase font-bold tracking-wider ${
-                      isCritical 
-                        ? 'bg-error/20 text-error border border-error/30' 
-                        : isHigh 
-                        ? 'bg-warning/20 text-warning border border-warning/30' 
-                        : 'bg-secondary/20 text-secondary border border-secondary/30'
-                    }`}>
-                      {hotspot.severity}
-                    </span>
-                  )}
+          return (
+            <div 
+              key={index} 
+              onClick={() => onSelectZone?.(index)}
+              className={`p-5 cursor-pointer flex flex-col gap-4 border-b border-[#222222] transition-none group ${
+                isSelected ? 'bg-[#111111] border-l-4 border-l-[#ff4d00]' : 'bg-[#000000] border-l-4 border-l-transparent hover:bg-[#0a0a0a]'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Square className={`w-3 h-3 ${isSelected ? 'fill-[#ff4d00] text-[#ff4d00]' : isCritical ? 'fill-white text-white' : 'text-[#525252]'}`} />
+                  <span className={`font-headline font-black uppercase text-sm ${isSelected ? 'text-[#ff4d00]' : 'text-white'}`}>
+                    ZONE {String.fromCharCode(65 + index)}: {hotspot.zone_name}
+                  </span>
                 </div>
+                {isFleetDispatched ? (
+                  <span className="px-2 py-1 bg-white text-black text-[9px] font-mono uppercase font-bold tracking-widest flex items-center gap-2">
+                    <CheckCircle2 className="w-3 h-3" />
+                    INTERCEPTING
+                  </span>
+                ) : (
+                  <span className={`px-2 py-1 border text-[9px] font-mono uppercase font-bold tracking-widest ${
+                    isCritical ? 'border-white text-white' : 'border-[#525252] text-[#a3a3a3]'
+                  }`}>
+                    {hotspot.severity}
+                  </span>
+                )}
+              </div>
 
-                {/* Metrics Row */}
-                <div className="grid grid-cols-3 gap-1 pt-1 text-[11px] font-mono text-on-surface-variant">
-                  <div className="flex flex-col">
-                    <span className="text-[9px] text-on-surface-variant/70 uppercase">Risk Tier</span>
-                    <span className={`font-bold ${isCritical ? 'text-error' : isHigh ? 'text-warning' : 'text-secondary'}`}>
-                      {isFleetDispatched ? Math.round(hotspot.risk_percentage * 0.35) : hotspot.risk_percentage}%
-                    </span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[9px] text-on-surface-variant/70 uppercase">Est. Debris</span>
-                    <span className="text-on-surface font-semibold">{hotspot.estimated_debris_kg} kg</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[9px] text-on-surface-variant/70 uppercase">Peak Arrival</span>
-                    <span className="text-primary font-semibold">T+{hotspot.peak_arrival_hours}h</span>
-                  </div>
+              <div className="grid grid-cols-3 gap-2 text-[10px] font-mono uppercase font-bold tracking-widest text-[#a3a3a3]">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[#525252]">RISK</span>
+                  <span className={`text-sm ${isCritical ? 'text-white' : 'text-[#a3a3a3]'}`}>
+                    {isFleetDispatched ? Math.round(hotspot.risk_percentage * 0.35) : hotspot.risk_percentage}%
+                  </span>
                 </div>
-
-                {/* Risk Bar */}
-                <div className="w-full bg-surface-container-highest/80 h-1.5 rounded-full overflow-hidden mt-1">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[#525252]">DEBRIS</span>
+                  <span className="text-white text-sm">{hotspot.estimated_debris_kg} KG</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[#525252]">ETA</span>
+                  <span className="text-[#ff4d00] text-sm">T+{hotspot.peak_arrival_hours}H</span>
+                </div>
+              </div>
+              
+              {isSelected && (
+                <div className="w-full h-1 bg-[#333333] mt-2 relative">
                   <div 
-                    className={`h-full rounded-full transition-all duration-700 ${
-                      isFleetDispatched ? 'bg-emerald-400' : isCritical ? 'bg-error' : isHigh ? 'bg-warning' : 'bg-secondary'
-                    }`} 
+                    className={`absolute top-0 left-0 h-full ${isFleetDispatched ? 'bg-white' : isCritical ? 'bg-[#ff4d00]' : 'bg-[#a3a3a3]'}`} 
                     style={{ width: `${isFleetDispatched ? hotspot.risk_percentage * 0.35 : hotspot.risk_percentage}%` }}
                   ></div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
-      <div className="p-3 rounded-2xl bg-surface-container/60 border border-outline-variant/30 flex items-center justify-between text-xs font-mono text-on-surface-variant">
-        <span>Selected Sector:</span>
-        <span className="text-primary font-semibold">
-          {hotspots[selectedZoneIndex]?.zone_name || 'Versova Outfall'}
+      <div className="p-4 bg-[#111111] border-t-2 border-[#333333] flex items-center justify-between text-[10px] font-mono uppercase font-bold tracking-widest mt-auto">
+        <span className="text-[#a3a3a3]">SELECTED:</span>
+        <span className="text-white">
+          {hotspots[selectedZoneIndex]?.zone_name || 'VERSOVA OUTFALL'}
         </span>
       </div>
     </div>

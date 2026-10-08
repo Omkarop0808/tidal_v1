@@ -70,8 +70,10 @@ class DriftEngine:
                     particles_lat[active] += lat_shift
                     particles_lon[active] += lon_shift
                     
-                    # Beaching condition: particles hit the coastline (approx moving east of 72.82)
-                    newly_beached = (particles_lon > self.coastline_lon) & active
+                    # Beaching condition: Dynamic coastline bound (Mumbai slants from Vasai ~72.78 down to Colaba ~72.82)
+                    # Simple linear approximation of coast: lon = 72.82 - (lat - 18.9) * 0.05
+                    coastline_bound = 72.82 - ((particles_lat - 18.9) * 0.05)
+                    newly_beached = (particles_lon > coastline_bound) & active
                     beached_mask[newly_beached] = True
 
             # Record center of mass of active particles, or last known if all beached

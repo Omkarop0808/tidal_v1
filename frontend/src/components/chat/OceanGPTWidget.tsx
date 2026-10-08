@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
 import { 
   Sparkles, 
   Send, 
   X, 
   Bot, 
-  User
+  User,
+  Square
 } from 'lucide-react';
 
 interface Message {
@@ -15,15 +15,15 @@ interface Message {
 }
 
 const suggestedPrompts = [
-  "What is the beaching risk at Versova?",
-  "How does the Hungarian fleet optimizer work?",
-  "Explain the Monte Carlo hydrodynamic drift."
+  "BEACHING RISK AT VERSOVA?",
+  "HUNGARIAN FLEET OPTIMIZER?",
+  "EXPLAIN DRIFT MODEL."
 ];
 
 export const OceanGPTWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { id: '1', sender: 'bot', text: "Welcome to TIDAL Tactical Command. I'm Ocean-GPT, your maritime intelligence copilot. Ask me anything about current coastal risk tiers, hydrodynamic simulations, or autonomous fleet dispatch." }
+    { id: '1', sender: 'bot', text: "WELCOME TO TIDAL TACTICAL COMMAND. I AM OCEAN-GPT, YOUR MARITIME INTELLIGENCE COPILOT. AWAITING QUERY." }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -46,15 +46,16 @@ export const OceanGPTWidget = () => {
     setIsLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:8000/api/v1/chat', { message: textToSend });
-      const newBotMsg: Message = { id: (Date.now() + 1).toString(), sender: 'bot', text: res.data.response };
+      const { api } = await import('../../lib/api');
+      const res = await api.chat(textToSend);
+      const newBotMsg: Message = { id: (Date.now() + 1).toString(), sender: 'bot', text: res.response.toUpperCase() };
       setMessages(prev => [...prev, newBotMsg]);
     } catch (error) {
       console.error('Error sending message to Ocean-GPT:', error);
       const errorMsg: Message = { 
         id: (Date.now() + 1).toString(), 
         sender: 'bot', 
-        text: "Direct data link offline. Tactical fallback response: Active hotspot is Versova Creek (Zone A) with 420 kg predicted accumulation. 3 Autonomous Skimmers stand ready for deployment." 
+        text: "DIRECT LINK OFFLINE. FALLBACK RESPONSE: ACTIVE HOTSPOT IS VERSOVA (ZONE A) WITH 420KG PREDICTED. 3 SKIMMERS ON STANDBY." 
       };
       setMessages(prev => [...prev, errorMsg]);
     } finally {
@@ -70,57 +71,54 @@ export const OceanGPTWidget = () => {
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
       {isOpen && (
-        <div className="mb-4 w-[360px] sm:w-[420px] h-[540px] max-h-[82vh] flex flex-col bg-surface-container-low/95 backdrop-blur-2xl border border-primary/30 rounded-3xl shadow-2xl overflow-hidden transition-all duration-300 origin-bottom-right">
+        <div className="mb-4 w-[360px] sm:w-[420px] h-[540px] max-h-[82vh] flex flex-col bg-black border-2 border-white shadow-2xl overflow-hidden transition-none origin-bottom-right">
           
           {/* Dialog Header */}
-          <div className="flex items-center justify-between p-4 px-5 border-b border-outline-variant/30 bg-surface-container/60">
+          <div className="flex items-center justify-between p-4 px-5 border-b-2 border-white bg-[#111111]">
             <div className="flex items-center gap-3">
-              <div className="relative w-10 h-10 rounded-2xl bg-gradient-to-tr from-primary to-secondary p-0.5 flex items-center justify-center shadow-glow-sm">
-                <div className="w-full h-full rounded-[14px] bg-surface flex items-center justify-center text-primary">
-                  <Sparkles className="w-5 h-5 text-primary" />
-                </div>
-                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-surface"></span>
+              <div className="w-10 h-10 bg-white flex items-center justify-center text-black">
+                <Sparkles className="w-6 h-6" />
               </div>
-              <div>
-                <h3 className="text-on-surface font-headline font-bold text-sm flex items-center gap-1.5">
-                  Ocean-GPT
-                  <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-primary/10 text-primary border border-primary/20">AGENT</span>
+              <div className="flex flex-col">
+                <h3 className="text-white font-headline font-black text-sm uppercase tracking-tighter flex items-center gap-2">
+                  OCEAN-GPT
+                  <span className="text-[9px] font-mono px-2 py-0.5 bg-white text-black font-bold tracking-widest border-2 border-white">AGENT</span>
                 </h3>
-                <p className="text-on-surface-variant text-[11px] font-mono">Marine Copilot • LLM Function Calling</p>
+                <p className="text-[#a3a3a3] text-[9px] font-mono uppercase font-bold tracking-widest">TACTICAL COPILOT // ONLINE</p>
               </div>
             </div>
 
             <button 
               onClick={() => setIsOpen(false)}
-              className="w-8 h-8 rounded-xl hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors border border-outline-variant/30"
+              className="w-10 h-10 bg-black hover:bg-white text-white hover:text-black flex items-center justify-center transition-none border-2 border-[#333333] hover:border-white"
               aria-label="Close Ocean-GPT"
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3.5">
+          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 bg-black">
             {messages.map((msg) => {
               const isUser = msg.sender === 'user';
               return (
                 <div 
                   key={msg.id} 
-                  className={`flex gap-2 max-w-[88%] ${isUser ? 'self-end flex-row-reverse' : 'self-start'}`}
+                  className={`flex gap-3 max-w-[90%] ${isUser ? 'self-end flex-row-reverse' : 'self-start'}`}
                 >
-                  <div className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold ${
+                  <div className={`w-8 h-8 flex items-center justify-center shrink-0 border-2 ${
                     isUser 
-                      ? 'bg-primary text-on-primary font-mono' 
-                      : 'bg-surface-container-high text-primary border border-primary/20'
+                      ? 'bg-white text-black border-white' 
+                      : 'bg-[#111111] text-white border-[#333333]'
                   }`}>
-                    {isUser ? <User className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
+                    {isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                   </div>
 
                   <div 
-                    className={`p-3.5 rounded-2xl text-xs leading-relaxed ${
+                    className={`p-4 text-[10px] font-mono font-bold tracking-widest leading-relaxed uppercase border-2 ${
                       isUser 
-                        ? 'bg-primary text-on-primary font-medium rounded-tr-xs shadow-sm' 
-                        : 'bg-surface-container/90 text-on-surface border border-outline-variant/40 rounded-tl-xs shadow-sm font-mono'
+                        ? 'bg-white text-black border-white' 
+                        : 'bg-[#111111] text-white border-[#333333]'
                     }`}
                   >
                     <p className="whitespace-pre-wrap">{msg.text}</p>
@@ -130,31 +128,33 @@ export const OceanGPTWidget = () => {
             })}
 
             {isLoading && (
-              <div className="flex items-center gap-2 self-start max-w-[85%]">
-                <div className="w-7 h-7 rounded-xl bg-surface-container-high text-primary border border-primary/20 flex items-center justify-center shrink-0">
-                  <Bot className="w-3.5 h-3.5" />
+              <div className="flex items-center gap-3 self-start max-w-[85%]">
+                <div className="w-8 h-8 bg-[#111111] text-white border-2 border-[#333333] flex items-center justify-center shrink-0">
+                  <Bot className="w-4 h-4" />
                 </div>
-                <div className="p-3.5 rounded-2xl bg-surface-container/90 border border-outline-variant/40 rounded-tl-xs flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse" style={{ animationDelay: '0.2s' }}></span>
-                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse" style={{ animationDelay: '0.4s' }}></span>
-                  <span className="text-[11px] font-mono text-on-surface-variant ml-1.5">Analyzing ocean state...</span>
+                <div className="p-4 bg-[#111111] border-2 border-[#333333] flex items-center gap-2">
+                  <span className="w-2 h-2 bg-white animate-pulse"></span>
+                  <span className="w-2 h-2 bg-white animate-pulse" style={{ animationDelay: '0.2s' }}></span>
+                  <span className="w-2 h-2 bg-white animate-pulse" style={{ animationDelay: '0.4s' }}></span>
+                  <span className="text-[10px] font-mono font-bold tracking-widest uppercase text-[#a3a3a3] ml-2">PROCESSING...</span>
                 </div>
               </div>
             )}
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Suggested Prompts (when only 1 or 2 messages) */}
+          {/* Suggested Prompts */}
           {messages.length <= 2 && (
-            <div className="px-4 pb-2 flex flex-col gap-1.5">
-              <span className="text-[10px] font-mono uppercase text-on-surface-variant/70 tracking-wider">Suggested queries:</span>
-              <div className="flex flex-wrap gap-1.5">
+            <div className="px-4 pb-4 flex flex-col gap-2 bg-black border-t-2 border-[#333333] pt-4">
+              <span className="text-[10px] font-mono uppercase font-bold text-[#a3a3a3] tracking-widest flex items-center gap-2">
+                <Square className="w-2 h-2 fill-current" /> SUGGESTED QUERIES
+              </span>
+              <div className="flex flex-wrap gap-2">
                 {suggestedPrompts.map((prompt, i) => (
                   <button
                     key={i}
                     onClick={() => sendMessage(prompt)}
-                    className="px-2.5 py-1 rounded-lg bg-surface-container/70 hover:bg-surface-container hover:text-primary text-[10px] font-mono text-on-surface-variant border border-outline-variant/30 text-left transition-colors"
+                    className="px-3 py-2 bg-[#111111] hover:bg-white text-[#a3a3a3] hover:text-black text-[9px] font-mono font-bold tracking-widest uppercase border-2 border-[#333333] hover:border-white text-left transition-none"
                   >
                     {prompt}
                   </button>
@@ -164,23 +164,23 @@ export const OceanGPTWidget = () => {
           )}
 
           {/* Input Form */}
-          <div className="p-3.5 border-t border-outline-variant/30 bg-surface-container/40">
-            <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+          <div className="p-4 border-t-2 border-white bg-[#111111]">
+            <form onSubmit={handleSendMessage} className="flex items-center gap-3">
               <input
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Ask about hotspots, debris drift, fleet..."
-                className="flex-1 bg-surface-container-low border border-outline-variant/40 rounded-xl px-3.5 py-2.5 text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-primary transition-colors text-xs font-mono"
+                placeholder="ENTER TACTICAL QUERY..."
+                className="flex-1 bg-black border-2 border-[#333333] px-4 py-3 text-white placeholder:text-[#525252] focus:outline-none focus:border-white transition-none text-[10px] font-mono font-bold tracking-widest uppercase"
                 disabled={isLoading}
               />
               <button 
                 type="submit"
                 disabled={!inputValue.trim() || isLoading}
-                className="w-10 h-10 rounded-xl bg-gradient-to-r from-primary to-secondary text-on-primary flex items-center justify-center hover:shadow-glow transition-all disabled:opacity-40 flex-shrink-0"
+                className="w-12 h-12 bg-white hover:bg-[#ff4d00] text-black border-2 border-white hover:border-[#ff4d00] flex items-center justify-center transition-none disabled:opacity-40 disabled:bg-[#333333] disabled:text-[#525252] flex-shrink-0"
                 aria-label="Send message"
               >
-                <Send className="w-4 h-4" />
+                <Send className="w-5 h-5" />
               </button>
             </form>
           </div>
@@ -190,20 +190,17 @@ export const OceanGPTWidget = () => {
       {/* Floating Action Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 shadow-2xl group ${
+        className={`w-16 h-16 flex items-center justify-center transition-none border-2 shadow-2xl ${
           isOpen 
-            ? 'bg-surface-container-highest text-on-surface rotate-90 scale-95 border border-outline-variant/50' 
-            : 'bg-gradient-to-tr from-primary to-secondary text-on-primary shadow-glow hover:scale-105'
+            ? 'bg-[#111111] text-white border-white' 
+            : 'bg-white text-black border-black hover:bg-[#ff4d00] hover:border-[#ff4d00]'
         }`}
         aria-label="Open Ocean-GPT Assistant"
       >
         {isOpen ? (
           <X className="w-6 h-6" />
         ) : (
-          <div className="relative flex items-center justify-center">
-            <Sparkles className="w-6 h-6 text-on-primary group-hover:rotate-12 transition-transform" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-background animate-pulse"></span>
-          </div>
+          <Bot className="w-8 h-8" />
         )}
       </button>
     </div>
