@@ -139,6 +139,7 @@ const Hotspots = () => {
           <LiveMap 
             hotspots={hotspots}
             selectedZoneIndex={selectedZoneIndex}
+            onSelectZone={setSelectedZoneIndex}
             isFleetDispatched={isFleetDispatched}
           />
         </div>

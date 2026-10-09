@@ -17,7 +17,8 @@ import {
   MapPin, 
   ArrowRight,
   Square,
-  Cpu
+  Cpu,
+  Recycle
 } from 'lucide-react';
 import { Scene } from '../components/Map3D/Scene';
 import { useSim, OUTFALL_LOCATIONS } from '../store';
@@ -418,7 +419,7 @@ export const Simulate = () => {
         {/* Right Column: 3D Digital Twin Viewport & Comparative Metrics Dashboard (7 cols) */}
         <div className="lg:col-span-7 flex flex-col gap-[1px] bg-[#333333]">
           
-          <div className="relative w-full h-[500px] bg-[#000000] flex flex-col">
+          <div className="relative w-full h-[640px] lg:h-[700px] min-h-[600px] bg-[#000000] flex flex-col">
             
             <div className="absolute inset-0 z-0 opacity-100">
               <Scene />
@@ -576,6 +577,36 @@ export const Simulate = () => {
               </svg>
               <div className="absolute bottom-4 left-4 text-[10px] text-[#a3a3a3]">T+0H BASELINE</div>
               <div className="absolute bottom-4 right-4 text-[10px] text-white">T+72H STEADY STATE</div>
+            </div>
+
+            {/* Plastics Exchange & Real-Time Circular Economic Ledger */}
+            <div className="p-6 bg-[#0a0a0a] border-2 border-[#222222] flex flex-col gap-4">
+              <div className="flex items-center justify-between pb-2 border-b border-[#222222]">
+                <div className="flex items-center gap-2 text-white font-mono text-[10px] font-bold uppercase tracking-widest">
+                  <Recycle className="w-4 h-4 text-[#ff4d00]" />
+                  <span>PLASTICS EXCHANGE // VALUE RECOVERY</span>
+                </div>
+                <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase">₹35.0 / KG SPOT RATE</span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 font-mono text-center">
+                <div className="p-3 bg-[#050505] border border-[#222222] flex flex-col gap-1">
+                  <span className="text-[9px] text-[#737373] uppercase font-bold">RECOVERED VALUE</span>
+                  <span className="text-lg sm:text-xl font-headline font-black text-white">₹{(capturedOffshoreKg * 35).toLocaleString()}</span>
+                </div>
+                <div className="p-3 bg-[#050505] border border-[#222222] flex flex-col gap-1">
+                  <span className="text-[9px] text-[#737373] uppercase font-bold">CO₂e AVOIDED</span>
+                  <span className="text-lg sm:text-xl font-headline font-black text-emerald-400">+{Math.round(capturedOffshoreKg * 1.8)} KG</span>
+                </div>
+                <div className="p-3 bg-[#050505] border border-[#222222] flex flex-col gap-1">
+                  <span className="text-[9px] text-[#737373] uppercase font-bold">EPR CREDITS</span>
+                  <span className="text-lg sm:text-xl font-headline font-black text-[#ff4d00]">{Math.round(capturedOffshoreKg * 1.2)}</span>
+                </div>
+              </div>
+
+              <p className="text-[9px] font-mono text-[#a3a3a3] uppercase font-bold leading-relaxed border-l-2 border-[#ff4d00] pl-3">
+                OFFSHORE INTERCEPTION OF {capturedOffshoreKg} KG PREVENTS MICROPLASTIC WEATHERING AND DELIVERS REVENUE TO COVER SQUAD FUEL.
+              </p>
             </div>
 
             <div className="flex items-center justify-between pt-4 border-t-2 border-[#333333]">

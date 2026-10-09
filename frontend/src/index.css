@@ -100,14 +100,48 @@
     text-shadow: 0 0 15px rgba(255, 51, 102, 0.5);
   }
 
-  /* Leaflet Map Tiles Inversion & Deep Navy Tone */
+  /* Leaflet Map Tiles */
   .map-tiles, .dark-map-tiles {
     filter: invert(100%) grayscale(100%) brightness(70%) contrast(120%);
   }
 
+  .cartodb-dark-tiles {
+    filter: brightness(95%) contrast(110%);
+  }
+
   .leaflet-container {
-    background-color: #000000 !important;
+    background-color: #050505 !important;
     font-family: inherit !important;
+  }
+
+  .leaflet-popup-content-wrapper {
+    background: #050505 !important;
+    color: #ffffff !important;
+    border: 2px solid #ff4d00 !important;
+    border-radius: 0px !important;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.95) !important;
+    padding: 0 !important;
+  }
+
+  .leaflet-popup-content {
+    margin: 0 !important;
+    line-height: 1.4 !important;
+  }
+
+  .leaflet-popup-tip-container {
+    display: none !important;
+  }
+
+  .leaflet-container a.leaflet-popup-close-button {
+    color: #ffffff !important;
+    padding: 6px !important;
+    top: 6px !important;
+    right: 6px !important;
+  }
+
+  .custom-leaflet-marker {
+    background: transparent !important;
+    border: none !important;
   }
 
   .leaflet-tooltip.custom-tooltip {

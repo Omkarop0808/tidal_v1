@@ -47,6 +47,7 @@ const Overview = () => {
   
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
   const [selectedActivityId, setSelectedActivityId] = useState<string | undefined>();
+  const [selectedBeach, setSelectedBeach] = useState<any>(null);
 
   const { data: liveData, isConnected } = useLiveFeed('ws://localhost:8000/ws/live');
 
@@ -336,8 +337,11 @@ const Overview = () => {
             custom={1} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
             className="lg:col-span-8 relative min-h-[650px] bg-[#000000] flex flex-col"
           >
-            <div className="absolute inset-0 z-0 opacity-80 mix-blend-screen filter grayscale">
-              <IntelligenceMap />
+            <div className="absolute inset-0 z-0">
+              <IntelligenceMap 
+                onSelectBeach={(beach) => setSelectedBeach(beach)} 
+                selectedBeachId={selectedBeach?.id} 
+              />
             </div>
 
             <div className="relative z-10 p-6 flex justify-between pointer-events-none font-mono text-[10px] uppercase font-bold tracking-widest">
@@ -352,8 +356,14 @@ const Overview = () => {
 
             <div className="relative z-10 mt-auto p-6 flex flex-col md:flex-row justify-between gap-4 pointer-events-none font-mono text-[10px] font-bold uppercase tracking-widest">
               <div className="px-4 py-3 bg-black border border-[#333333] text-white flex flex-col gap-1 pointer-events-auto">
-                <span className="text-[#a3a3a3]">TARGET:</span>
-                <span className="text-[#ff4d00]">18.9750° N, 72.8258° E</span>
+                <span className="text-[#a3a3a3]">
+                  {selectedBeach ? `TARGET: ${selectedBeach.name.toUpperCase()}` : 'TARGET ACQUIRED:'}
+                </span>
+                <span className="text-[#ff4d00]">
+                  {selectedBeach 
+                    ? `${selectedBeach.lat.toFixed(4)}° N, ${selectedBeach.lon.toFixed(4)}° E • ${selectedBeach.baseline_risk}% RISK`
+                    : '19.1350° N, 72.8140° E • VERSOVA SECTOR'}
+                </span>
               </div>
               <div className="px-4 py-3 bg-black border border-[#333333] flex gap-4 pointer-events-auto">
                 {['Current', 'Wind', 'Tide', 'Debris'].map(layer => {

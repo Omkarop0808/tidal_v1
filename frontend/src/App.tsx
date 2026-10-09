@@ -24,7 +24,7 @@ function App() {
         <div className="flex-1 lg:pl-72 flex flex-col min-h-screen w-full overflow-x-hidden">
           <Header onToggleMobile={() => setMobileNavOpen(prev => !prev)} />
           
-          <main className="relative pt-16 flex-1 flex flex-col z-0">
+          <main className="relative pt-16 flex-1 flex flex-col">
             <Routes>
               <Route path="/" element={<Navigate to="/overview" replace />} />
               <Route path="/overview" element={<Overview />} />
