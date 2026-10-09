@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, Tooltip } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { Navigation, Crosshair } from 'lucide-react';
@@ -17,6 +17,7 @@ const createHotspotIcon = (h: any, isSelected: boolean, index: number) => {
   const isCritical = h.severity?.toLowerCase() === 'critical' || (h.risk_percentage && h.risk_percentage > 75);
   const isCleaned = h.status === 'Cleaned';
   const label = h.zone_name?.split(' ')[0] || `ZONE ${String.fromCharCode(65 + index)}`;
+  const isEven = index % 2 === 0;
 
   if (isCleaned) {
     return L.divIcon({
@@ -28,12 +29,12 @@ const createHotspotIcon = (h: any, isSelected: boolean, index: number) => {
               <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <div class="ml-2 px-2 py-0.5 bg-black/95 border border-[#10b981] text-[#10b981] font-mono text-[9px] font-bold uppercase whitespace-nowrap shadow-xl">
+          <div class="absolute ${isEven ? 'left-7' : 'right-7'} top-0.5 px-2 py-0.5 bg-black/95 border border-[#10b981] text-[#10b981] font-mono text-[8px] font-bold uppercase whitespace-nowrap shadow-xl pointer-events-none">
             ${label} • SECURED
           </div>
         </div>
       `,
-      iconSize: [130, 24],
+      iconSize: [24, 24],
       iconAnchor: [12, 12],
     });
   }
@@ -43,17 +44,17 @@ const createHotspotIcon = (h: any, isSelected: boolean, index: number) => {
       className: 'custom-leaflet-marker',
       html: `
         <div class="relative flex items-center cursor-pointer group" style="transform: translate(-14px, -14px);">
-          <span class="absolute -inset-1.5 w-10 h-10 bg-[#ff4d00] animate-ping opacity-60 rounded-full"></span>
+          <span class="absolute -inset-1 w-9 h-9 bg-[#ff4d00] animate-ping opacity-60 rounded-full"></span>
           <div class="relative w-7 h-7 bg-[#ff4d00] border-2 border-white flex items-center justify-center shadow-[0_0_18px_#ff4d00] ${isSelected ? 'ring-4 ring-white' : ''}">
-            <span class="w-2.5 h-2.5 bg-black"></span>
+            <span class="text-black font-mono font-black text-[9px]">${Math.round(h.risk_percentage || 94)}%</span>
           </div>
-          <div class="ml-2 px-2 py-0.5 bg-black/95 border-2 border-[#ff4d00] text-white font-mono text-[9px] font-bold uppercase tracking-wider whitespace-nowrap shadow-2xl flex items-center gap-1.5">
-            <span class="text-[#ff4d00]">${label}</span>
-            <span class="bg-[#ff4d00] text-black px-1 text-[8px] font-black">${h.risk_percentage || 94}% CRIT</span>
+          <div class="absolute ${isEven ? 'left-8' : 'right-8'} top-0.5 px-2 py-0.5 bg-black/95 border-2 border-[#ff4d00] text-white font-mono text-[8px] font-bold uppercase tracking-wider whitespace-nowrap shadow-2xl flex items-center gap-1.5 pointer-events-none">
+            <span class="text-[#ff4d00] font-black">${label}</span>
+            <span class="bg-[#ff4d00] text-black px-1 font-bold">CRIT</span>
           </div>
         </div>
       `,
-      iconSize: [160, 28],
+      iconSize: [28, 28],
       iconAnchor: [14, 14],
     });
   }
@@ -62,17 +63,17 @@ const createHotspotIcon = (h: any, isSelected: boolean, index: number) => {
   return L.divIcon({
     className: 'custom-leaflet-marker',
     html: `
-      <div class="relative flex items-center cursor-pointer group" style="transform: translate(-10px, -10px);">
+      <div class="relative flex items-center cursor-pointer group" style="transform: translate(-11px, -11px);">
         <div class="w-5 h-5 bg-[#00e5ff] border-2 border-white flex items-center justify-center shadow-[0_0_10px_#00e5ff] ${isSelected ? 'ring-4 ring-white' : ''}">
-          <span class="w-1.5 h-1.5 bg-black"></span>
+          <span class="text-black font-mono font-black text-[8px]">${Math.round(h.risk_percentage || 60)}%</span>
         </div>
-        <div class="ml-2 px-2 py-0.5 bg-black/95 border border-[#00e5ff] text-[#00e5ff] font-mono text-[9px] font-bold uppercase whitespace-nowrap shadow-xl">
-          ${label} • ${h.risk_percentage || 60}% WATCH
+        <div class="absolute ${isEven ? 'left-7' : 'right-7'} top-0.5 px-2 py-0.5 bg-black/95 border border-[#00e5ff] text-[#00e5ff] font-mono text-[8px] font-bold uppercase whitespace-nowrap shadow-xl pointer-events-none">
+          ${label} • WATCH
         </div>
       </div>
     `,
-    iconSize: [140, 20],
-    iconAnchor: [10, 10],
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
   });
 };
 
@@ -108,7 +109,7 @@ export const LiveMap = ({
         </div>
       </div>
 
-      {/* CartoDB Dark Matter Tactical Map */}
+      {/* Esri World Dark Gray Base Map - Zero API Key, Zero Watermark */}
       <div className="absolute inset-0 z-0">
         <MapContainer 
           center={CENTER_POS} 
@@ -118,9 +119,16 @@ export const LiveMap = ({
           attributionControl={false}
         >
           <TileLayer 
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-            subdomains="abcd"
-            className="cartodb-dark-tiles"
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
+            maxZoom={16}
+            minZoom={7}
+            attribution="&copy; Esri &copy; DeLorme"
+          />
+          <TileLayer 
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}"
+            maxZoom={16}
+            minZoom={7}
+            opacity={0.65}
           />
 
           {/* Colaba Base Station */}
@@ -133,21 +141,18 @@ export const LiveMap = ({
                   <div class="w-5 h-5 bg-white border-2 border-black flex items-center justify-center shadow-[0_0_12px_#ffffff]">
                     <span class="w-2 h-2 bg-black"></span>
                   </div>
-                  <div class="ml-2 px-2 py-0.5 bg-black border border-white text-white font-mono text-[9px] font-bold uppercase whitespace-nowrap shadow-xl">
+                  <div class="absolute left-7 top-0 px-2 py-0.5 bg-black border border-white text-white font-mono text-[8px] font-bold uppercase whitespace-nowrap shadow-xl">
                     BASE HQ (COLABA)
                   </div>
                 </div>
               `,
-              iconSize: [150, 20],
+              iconSize: [20, 20],
               iconAnchor: [10, 10],
             })}
           >
-            <Popup>
-              <div className="p-3 bg-black text-white font-mono text-xs uppercase border-2 border-white">
-                <div className="font-bold text-white mb-1">COLABA NAVAL DOCK</div>
-                <div className="text-[#a3a3a3] text-[10px]">Headquarters for 3 Autonomous Interception Skimmers.</div>
-              </div>
-            </Popup>
+            <Tooltip direction="top" offset={[0, -10]} opacity={1}>
+              <span className="font-mono text-xs uppercase font-bold">Colaba Fleet Deployment HQ</span>
+            </Tooltip>
           </Marker>
 
           {/* Transit Vectors */}
@@ -184,7 +189,7 @@ export const LiveMap = ({
                 }}
               >
                 <Popup>
-                  <div className="p-4 bg-[#050505] text-white font-mono text-xs uppercase min-w-[220px]">
+                  <div className="p-4 bg-[#050505] text-white font-mono text-xs uppercase min-w-[230px]">
                     <div className="flex items-center justify-between pb-2 border-b border-[#333333] mb-3">
                       <div className="font-headline font-black text-sm text-white tracking-tight">
                         {h.zone_name}
@@ -239,7 +244,7 @@ export const LiveMap = ({
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 bg-[#ff4d00] border border-white"></span>
+          <span className="w-3 h-3 bg-[#ff4d00] border border-white text-black font-black text-[7px] flex items-center justify-center">%</span>
           <span className="text-[#ff4d00]">CRITICAL (&gt;75% PROBABILITY)</span>
         </div>
 

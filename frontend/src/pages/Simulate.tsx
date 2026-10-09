@@ -425,10 +425,10 @@ export const Simulate = () => {
               <Scene />
             </div>
             
-            <div className="absolute top-4 left-4 z-30 max-w-xs bg-black border-l-4 border-[#ff4d00] p-4 pointer-events-none shadow-2xl">
-              <h4 className="text-[#ff4d00] font-headline font-black text-sm uppercase tracking-tighter mb-1">Purpose & Objective</h4>
-              <p className="text-[10px] font-mono text-white uppercase tracking-widest leading-relaxed">
-                This digital twin uses Monte-Carlo physics to simulate marine debris trajectories. It decides the optimal fleet dispatch configuration by predicting how unmitigated weather forces push plastics onto coastal targets.
+            <div className="absolute top-4 left-4 z-30 max-w-[250px] bg-black/90 border border-[#333333] border-l-4 border-l-[#ff4d00] p-3 pointer-events-none shadow-xl">
+              <h4 className="text-[#ff4d00] font-headline font-black text-xs uppercase tracking-tighter mb-1">Purpose & Objective</h4>
+              <p className="text-[9px] font-mono text-[#e5e5e5] uppercase tracking-widest leading-relaxed">
+                Simulates Monte-Carlo hydrodynamic drift to forecast shoreline beaching impact and guide fleet countermeasure placement.
               </p>
             </div>
             

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
 import { api } from '../lib/api';
-import { Radio, Navigation } from 'lucide-react';
+import { Radio } from 'lucide-react';
 
 interface IntelligenceMapProps {
   onSelectBeach?: (beach: any) => void;
@@ -11,10 +11,11 @@ interface IntelligenceMapProps {
 
 const NAVAL_BASE_COORDS: [number, number] = [18.9067, 72.8147]; // Colaba Naval Dock
 
-// Generator for tactical high-contrast divIcons
-const createTacticalMarkerIcon = (beach: any, isSelected: boolean) => {
+// Clean non-colliding tactical marker generator
+const createTacticalMarkerIcon = (beach: any, isSelected: boolean, index: number) => {
   const isCritical = beach.baseline_risk >= 70 || beach.status === 'High Risk';
   const isCleaned = beach.status === 'Cleaned' || (beach.remaining_debris_kg !== undefined && beach.remaining_debris_kg <= 20);
+  const isEven = index % 2 === 0;
 
   if (isCleaned) {
     return L.divIcon({
@@ -26,12 +27,12 @@ const createTacticalMarkerIcon = (beach: any, isSelected: boolean) => {
               <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <div class="ml-2.5 px-2 py-0.5 bg-black/95 border border-[#10b981] text-[#10b981] font-mono text-[9px] font-bold uppercase whitespace-nowrap shadow-xl">
+          <div class="absolute ${isEven ? 'left-7' : 'right-7'} top-0.5 px-2 py-0.5 bg-black/95 border border-[#10b981] text-[#10b981] font-mono text-[8px] font-bold uppercase whitespace-nowrap shadow-xl pointer-events-none">
             ${beach.name.split(' ')[0]} • SECURED
           </div>
         </div>
       `,
-      iconSize: [140, 24],
+      iconSize: [24, 24],
       iconAnchor: [12, 12],
     });
   }
@@ -43,15 +44,15 @@ const createTacticalMarkerIcon = (beach: any, isSelected: boolean) => {
         <div class="relative flex items-center cursor-pointer group" style="transform: translate(-14px, -14px);">
           <span class="absolute -inset-1 w-9 h-9 bg-[#ff4d00] animate-ping opacity-60 rounded-full"></span>
           <div class="relative w-7 h-7 bg-[#ff4d00] border-2 border-white flex items-center justify-center shadow-[0_0_18px_#ff4d00] ${isSelected ? 'ring-4 ring-white' : ''}">
-            <span class="w-2.5 h-2.5 bg-black"></span>
+            <span class="text-black font-mono font-black text-[9px]">${Math.round(beach.baseline_risk || 94)}%</span>
           </div>
-          <div class="ml-2.5 px-2 py-0.5 bg-black/95 border-2 border-[#ff4d00] text-white font-mono text-[9px] font-bold uppercase tracking-wider whitespace-nowrap shadow-2xl flex items-center gap-1.5">
-            <span class="text-[#ff4d00]">${beach.name.split(' ')[0]}</span>
-            <span class="bg-[#ff4d00] text-black px-1 py-0.2 text-[8px]">${beach.baseline_risk || 94}% CRITICAL</span>
+          <div class="absolute ${isEven ? 'left-8' : 'right-8'} top-0.5 px-2 py-0.5 bg-black/95 border-2 border-[#ff4d00] text-white font-mono text-[8px] font-bold uppercase tracking-wider whitespace-nowrap shadow-2xl flex items-center gap-1.5 pointer-events-none">
+            <span class="text-[#ff4d00] font-black">${beach.name.split(' ')[0]}</span>
+            <span class="bg-[#ff4d00] text-black px-1 font-bold">CRIT</span>
           </div>
         </div>
       `,
-      iconSize: [160, 28],
+      iconSize: [28, 28],
       iconAnchor: [14, 14],
     });
   }
@@ -60,17 +61,17 @@ const createTacticalMarkerIcon = (beach: any, isSelected: boolean) => {
   return L.divIcon({
     className: 'custom-leaflet-marker',
     html: `
-      <div class="relative flex items-center cursor-pointer group" style="transform: translate(-10px, -10px);">
+      <div class="relative flex items-center cursor-pointer group" style="transform: translate(-11px, -11px);">
         <div class="w-5 h-5 bg-[#00e5ff] border-2 border-white flex items-center justify-center shadow-[0_0_10px_#00e5ff] ${isSelected ? 'ring-4 ring-white' : ''}">
-          <span class="w-1.5 h-1.5 bg-black"></span>
+          <span class="text-black font-mono font-black text-[8px]">${Math.round(beach.baseline_risk || 60)}%</span>
         </div>
-        <div class="ml-2 px-2 py-0.5 bg-black/95 border border-[#00e5ff] text-[#00e5ff] font-mono text-[9px] font-bold uppercase whitespace-nowrap shadow-xl">
-          ${beach.name.split(' ')[0]} • ${beach.baseline_risk || 60}% WATCH
+        <div class="absolute ${isEven ? 'left-7' : 'right-7'} top-0.5 px-2 py-0.5 bg-black/95 border border-[#00e5ff] text-[#00e5ff] font-mono text-[8px] font-bold uppercase whitespace-nowrap shadow-xl pointer-events-none">
+          ${beach.name.split(' ')[0]} • WATCH
         </div>
       </div>
     `,
-    iconSize: [140, 20],
-    iconAnchor: [10, 10],
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
   });
 };
 
@@ -103,12 +104,20 @@ export const IntelligenceMap = ({ onSelectBeach, selectedBeachId }: Intelligence
         zoomControl={false}
         attributionControl={false}
       >
-        {/* CartoDB Dark Matter Tiles: Pristine, high-contrast maritime obsidian theme */}
+        {/* Esri World Dark Gray Base Tiles - 100% Free, Zero Watermark, Dark Maritime Obsidian Theme */}
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-          subdomains="abcd"
-          attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-          className="cartodb-dark-tiles"
+          url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
+          maxZoom={16}
+          minZoom={7}
+          attribution="&copy; Esri &copy; DeLorme"
+        />
+
+        {/* Esri Subtle Reference Labels Layer */}
+        <TileLayer
+          url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}"
+          maxZoom={16}
+          minZoom={7}
+          opacity={0.65}
         />
 
         {/* Tactical Fleet Patrol Lines from Colaba Base to Critical Sectors */}
@@ -122,8 +131,8 @@ export const IntelligenceMap = ({ onSelectBeach, selectedBeachId }: Intelligence
               pathOptions={{
                 color: '#ff4d00',
                 weight: 2,
-                opacity: 0.7,
-                dashArray: '6, 8',
+                opacity: 0.8,
+                dashArray: '5, 8',
               }}
             />
           ))}
@@ -135,37 +144,31 @@ export const IntelligenceMap = ({ onSelectBeach, selectedBeachId }: Intelligence
             className: 'custom-leaflet-marker',
             html: `
               <div class="relative flex items-center cursor-pointer" style="transform: translate(-10px, -10px);">
-                <div class="w-5 h-5 bg-white border-2 border-black flex items-center justify-center shadow-[0_0_10px_#ffffff]">
+                <div class="w-5 h-5 bg-white border-2 border-black flex items-center justify-center shadow-[0_0_12px_#ffffff]">
                   <span class="w-2 h-2 bg-black"></span>
                 </div>
-                <div class="ml-2 px-2 py-0.5 bg-black border border-white text-white font-mono text-[9px] font-bold uppercase whitespace-nowrap shadow-xl">
-                  COLABA NAVAL DOCK (BASE)
+                <div class="absolute left-7 top-0 px-2 py-0.5 bg-black border border-white text-white font-mono text-[8px] font-bold uppercase whitespace-nowrap shadow-xl">
+                  COLABA NAVAL DOCK (BASE HQ)
                 </div>
               </div>
             `,
-            iconSize: [160, 20],
+            iconSize: [20, 20],
             iconAnchor: [10, 10],
           })}
         >
-          <Popup>
-            <div className="p-3 bg-black text-white font-mono text-xs uppercase border-2 border-white">
-              <div className="font-bold text-white mb-1 flex items-center gap-2">
-                <Navigation className="w-3.5 h-3.5 text-[#ff4d00]" />
-                COLABA NAVAL DOCK
-              </div>
-              <p className="text-[10px] text-[#a3a3a3]">Primary deployment base for Autonomous Skimmer Squads.</p>
-            </div>
-          </Popup>
+          <Tooltip direction="top" offset={[0, -10]} opacity={1}>
+            <span className="font-mono text-xs uppercase font-bold">Colaba Fleet Deployment HQ</span>
+          </Tooltip>
         </Marker>
         
         {/* Coastal Hotspot Beacons */}
-        {beaches.map(b => {
+        {beaches.map((b, idx) => {
           const isSelected = selectedBeachId === b.id;
-          const icon = createTacticalMarkerIcon(b, isSelected);
+          const icon = createTacticalMarkerIcon(b, isSelected, idx);
           
           return (
             <Marker 
-              key={b.id} 
+              key={b.id || idx} 
               position={[b.lat, b.lon]} 
               icon={icon}
               eventHandlers={{
@@ -177,7 +180,7 @@ export const IntelligenceMap = ({ onSelectBeach, selectedBeachId }: Intelligence
               }}
             >
               <Popup>
-                <div className="p-4 bg-[#050505] text-white font-mono text-xs uppercase min-w-[220px]">
+                <div className="p-4 bg-[#050505] text-white font-mono text-xs uppercase min-w-[230px]">
                   <div className="flex items-center justify-between pb-2 border-b border-[#333333] mb-3">
                     <div className="font-headline font-black text-sm text-white tracking-tight flex items-center gap-1.5">
                       <span className={`w-2 h-2 ${b.baseline_risk >= 70 ? 'bg-[#ff4d00]' : b.status === 'Cleaned' ? 'bg-[#10b981]' : 'bg-[#00e5ff]'}`}></span>
@@ -215,7 +218,7 @@ export const IntelligenceMap = ({ onSelectBeach, selectedBeachId }: Intelligence
                     }}
                     className="w-full py-2 bg-[#ff4d00] hover:bg-white text-black font-headline font-black text-[10px] uppercase tracking-widest transition-none"
                   >
-                    SELECT TARGET HUD
+                    LOCK ON TARGET HUD
                   </button>
                 </div>
               </Popup>
@@ -225,14 +228,14 @@ export const IntelligenceMap = ({ onSelectBeach, selectedBeachId }: Intelligence
       </MapContainer>
 
       {/* On-Map Tactical Legend Box */}
-      <div className="absolute top-4 right-4 z-[500] bg-black/90 border-2 border-[#333333] p-3 text-white font-mono text-[9px] uppercase font-bold tracking-widest shadow-2xl flex flex-col gap-2 pointer-events-auto max-w-[240px]">
+      <div className="absolute top-4 right-4 z-[500] bg-black/95 border-2 border-[#333333] p-3 text-white font-mono text-[9px] uppercase font-bold tracking-widest shadow-2xl flex flex-col gap-2 pointer-events-auto max-w-[240px]">
         <div className="flex items-center gap-2 pb-1 border-b border-[#333333] text-[#a3a3a3]">
           <Radio className="w-3 h-3 text-[#ff4d00] animate-pulse" />
           <span>RADAR TARGET BEACONS</span>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 bg-[#ff4d00] border border-white"></span>
+          <span className="w-3 h-3 bg-[#ff4d00] border border-white text-black font-black text-[7px] flex items-center justify-center">%</span>
           <span className="text-[#ff4d00]">CRITICAL (&gt;70% RISK)</span>
         </div>
 
@@ -253,3 +256,5 @@ export const IntelligenceMap = ({ onSelectBeach, selectedBeachId }: Intelligence
     </div>
   );
 };
+
+export default IntelligenceMap;

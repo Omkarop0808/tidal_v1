@@ -10,7 +10,7 @@ export function Scene() {
   return (
     <div className="w-full h-full bg-[#000000] relative select-none">
       <Canvas 
-        camera={{ position: [0, 45, 45], fov: 42 }}
+        camera={{ position: [0, 32, 32], fov: 36 }}
         gl={{ antialias: true, alpha: false }}
       >
         <color attach="background" args={['#000000']} />
