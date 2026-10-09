@@ -12,6 +12,23 @@ import OceanGPTWidget from './components/chat/OceanGPTWidget';
 
 function App() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('tidal_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const handleToggleSidebar = () => {
+    setSidebarCollapsed(prev => {
+      const next = !prev;
+      try {
+        localStorage.setItem('tidal_sidebar_collapsed', String(next));
+      } catch {}
+      return next;
+    });
+  };
 
   return (
     <Router>
@@ -19,10 +36,15 @@ function App() {
         <Sidebar 
           mobileOpen={mobileNavOpen} 
           onCloseMobile={() => setMobileNavOpen(false)} 
+          isCollapsed={sidebarCollapsed}
+          onToggleCollapse={handleToggleSidebar}
         />
         
-        <div className="flex-1 lg:pl-72 flex flex-col min-h-screen w-full overflow-x-hidden">
-          <Header onToggleMobile={() => setMobileNavOpen(prev => !prev)} />
+        <div className={`flex-1 ${sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-72'} flex flex-col min-h-screen w-full overflow-x-hidden transition-all duration-300`}>
+          <Header 
+            onToggleMobile={() => setMobileNavOpen(prev => !prev)} 
+            isCollapsed={sidebarCollapsed}
+          />
           
           <main className="relative pt-16 flex-1 flex flex-col">
             <Routes>

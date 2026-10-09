@@ -11,9 +11,10 @@ import {
 
 interface HeaderProps {
   onToggleMobile?: () => void;
+  isCollapsed?: boolean;
 }
 
-export const Header = ({ onToggleMobile }: HeaderProps) => {
+export const Header = ({ onToggleMobile, isCollapsed = false }: HeaderProps) => {
   const [time, setTime] = useState<string>('');
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -34,7 +35,7 @@ export const Header = ({ onToggleMobile }: HeaderProps) => {
   ];
 
   return (
-    <header className="fixed top-0 lg:left-72 left-0 right-0 h-16 bg-[#000000] z-40 flex items-center justify-between px-4 sm:px-6 border-b-2 border-[#333333] font-mono">
+    <header className={`fixed top-0 ${isCollapsed ? 'lg:left-20' : 'lg:left-72'} left-0 right-0 h-16 bg-[#000000] z-40 flex items-center justify-between px-4 sm:px-6 border-b-2 border-[#333333] font-mono transition-all duration-300`}>
       
       {/* Left: Hamburger (Mobile) + Breadcrumb/Sector */}
       <div className="flex items-center gap-4">

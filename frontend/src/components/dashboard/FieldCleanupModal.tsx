@@ -40,7 +40,7 @@ export const FieldCleanupModal: React.FC<FieldCleanupModalProps> = ({
     Math.round((beach.estimated_debris_kg || beach.current_debris_kg || 300) * 0.2)
   );
   const [beforeImage] = useState<string>(
-    'https://images.unsplash.com/photo-1621451537084-482c73073e0f?auto=format&fit=crop&w=600&q=80'
+    'https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?auto=format&fit=crop&w=600&q=80'
   );
   const [afterImage] = useState<string>(
     'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80'

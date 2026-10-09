@@ -13,67 +13,62 @@ interface LiveMapProps {
   isFleetDispatched?: boolean;
 }
 
-const createHotspotIcon = (h: any, isSelected: boolean, index: number) => {
+const createHotspotIcon = (h: any, isSelected: boolean) => {
   const isCritical = h.severity?.toLowerCase() === 'critical' || (h.risk_percentage && h.risk_percentage > 75);
   const isCleaned = h.status === 'Cleaned';
-  const label = h.zone_name?.split(' ')[0] || `ZONE ${String.fromCharCode(65 + index)}`;
-  const isEven = index % 2 === 0;
+  const label = (h.zone_name || 'ZONE').split(' ')[0].toUpperCase();
+  const risk = Math.round(h.risk_percentage || 60);
 
-  if (isCleaned) {
-    return L.divIcon({
-      className: 'custom-leaflet-marker',
-      html: `
-        <div class="relative flex items-center cursor-pointer group" style="transform: translate(-12px, -12px);">
-          <div class="w-6 h-6 bg-[#10b981] border-2 border-white flex items-center justify-center shadow-[0_0_12px_#10b981] ${isSelected ? 'ring-4 ring-white' : ''}">
-            <svg class="w-3.5 h-3.5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <div class="absolute ${isEven ? 'left-7' : 'right-7'} top-0.5 px-2 py-0.5 bg-black/95 border border-[#10b981] text-[#10b981] font-mono text-[8px] font-bold uppercase whitespace-nowrap shadow-xl pointer-events-none">
-            ${label} • SECURED
-          </div>
-        </div>
-      `,
-      iconSize: [24, 24],
-      iconAnchor: [12, 12],
-    });
-  }
+  // Tactical color theme
+  const themeColor = isCleaned ? '#10b981' : isCritical ? '#ff4d00' : '#00e5ff';
 
-  if (isCritical) {
-    return L.divIcon({
-      className: 'custom-leaflet-marker',
-      html: `
-        <div class="relative flex items-center cursor-pointer group" style="transform: translate(-14px, -14px);">
-          <span class="absolute -inset-1 w-9 h-9 bg-[#ff4d00] animate-ping opacity-60 rounded-full"></span>
-          <div class="relative w-7 h-7 bg-[#ff4d00] border-2 border-white flex items-center justify-center shadow-[0_0_18px_#ff4d00] ${isSelected ? 'ring-4 ring-white' : ''}">
-            <span class="text-black font-mono font-black text-[9px]">${Math.round(h.risk_percentage || 94)}%</span>
-          </div>
-          <div class="absolute ${isEven ? 'left-8' : 'right-8'} top-0.5 px-2 py-0.5 bg-black/95 border-2 border-[#ff4d00] text-white font-mono text-[8px] font-bold uppercase tracking-wider whitespace-nowrap shadow-2xl flex items-center gap-1.5 pointer-events-none">
-            <span class="text-[#ff4d00] font-black">${label}</span>
-            <span class="bg-[#ff4d00] text-black px-1 font-bold">CRIT</span>
-          </div>
-        </div>
-      `,
-      iconSize: [28, 28],
-      iconAnchor: [14, 14],
-    });
-  }
-
-  // Moderate Watchlist
   return L.divIcon({
     className: 'custom-leaflet-marker',
     html: `
-      <div class="relative flex items-center cursor-pointer group" style="transform: translate(-11px, -11px);">
-        <div class="w-5 h-5 bg-[#00e5ff] border-2 border-white flex items-center justify-center shadow-[0_0_10px_#00e5ff] ${isSelected ? 'ring-4 ring-white' : ''}">
-          <span class="text-black font-mono font-black text-[8px]">${Math.round(h.risk_percentage || 60)}%</span>
+      <div class="relative flex items-center justify-center cursor-pointer group" style="width: 32px; height: 32px;">
+        
+        <!-- Subtle 1px Sonar Pulse (No excessive blur or dirty glow) -->
+        ${isCritical ? `
+          <span class="absolute inset-1 rounded-full border border-[#ff4d00] animate-ping opacity-60 pointer-events-none" style="animation-duration: 2.2s;"></span>
+        ` : ''}
+
+        <!-- Active Target Lock Reticle (when selected) -->
+        ${isSelected ? `
+          <div class="absolute inset-0 border border-white/60 pointer-events-none animate-pulse">
+            <span class="absolute -top-1 -left-1 w-1.5 h-1.5 border-t-2 border-l-2 border-[#ff4d00]"></span>
+            <span class="absolute -top-1 -right-1 w-1.5 h-1.5 border-t-2 border-r-2 border-[#ff4d00]"></span>
+            <span class="absolute -bottom-1 -left-1 w-1.5 h-1.5 border-b-2 border-l-2 border-[#ff4d00]"></span>
+            <span class="absolute -bottom-1 -right-1 w-1.5 h-1.5 border-b-2 border-r-2 border-[#ff4d00]"></span>
+          </div>
+        ` : ''}
+
+        <!-- Tactical Core Beacon (Crisp 14px with 1.5px white border) -->
+        <div class="relative w-3.5 h-3.5 flex items-center justify-center transition-transform duration-150 group-hover:scale-125 shadow-md"
+             style="background-color: ${themeColor}; border: 1.5px solid #ffffff;">
+          ${isCleaned ? `
+            <svg class="w-2.5 h-2.5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          ` : `
+            <span class="w-1 h-1 bg-black rounded-full"></span>
+          `}
         </div>
-        <div class="absolute ${isEven ? 'left-7' : 'right-7'} top-0.5 px-2 py-0.5 bg-black/95 border border-[#00e5ff] text-[#00e5ff] font-mono text-[8px] font-bold uppercase whitespace-nowrap shadow-xl pointer-events-none">
-          ${label} • WATCH
+
+        <!-- Clean Interactive Hover / Selected Tactical Pill -->
+        <div class="absolute left-full ml-2 px-2 py-0.5 bg-black/95 border border-[${themeColor}] text-white font-mono text-[9px] font-bold uppercase tracking-wider whitespace-nowrap shadow-2xl pointer-events-none transition-all duration-150 z-50 flex items-center gap-1.5 ${
+          isSelected 
+            ? 'opacity-100 scale-100' 
+            : 'opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0'
+        }">
+          <span style="color: ${themeColor}">${label}</span>
+          <span class="px-1 py-0.2 text-[8px] font-mono text-black font-extrabold" style="background-color: ${themeColor}">
+            ${isCleaned ? 'OK' : `${risk}%`}
+          </span>
         </div>
       </div>
     `,
-    iconSize: [22, 22],
-    iconAnchor: [11, 11],
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
   });
 };
 
@@ -137,17 +132,17 @@ export const LiveMap = ({
             icon={L.divIcon({
               className: 'custom-leaflet-marker',
               html: `
-                <div class="relative flex items-center cursor-pointer" style="transform: translate(-10px, -10px);">
-                  <div class="w-5 h-5 bg-white border-2 border-black flex items-center justify-center shadow-[0_0_12px_#ffffff]">
-                    <span class="w-2 h-2 bg-black"></span>
+                <div class="relative flex items-center justify-center cursor-pointer group" style="width: 28px; height: 28px;">
+                  <div class="w-3.5 h-3.5 bg-white border border-black flex items-center justify-center transition-transform duration-150 group-hover:scale-125 shadow-md">
+                    <span class="w-1.5 h-1.5 bg-[#ff4d00]"></span>
                   </div>
-                  <div class="absolute left-7 top-0 px-2 py-0.5 bg-black border border-white text-white font-mono text-[8px] font-bold uppercase whitespace-nowrap shadow-xl">
+                  <div class="absolute left-full ml-2 px-2 py-0.5 bg-black/95 border border-white text-white font-mono text-[8px] font-bold uppercase tracking-wider whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none shadow-xl">
                     BASE HQ (COLABA)
                   </div>
                 </div>
               `,
-              iconSize: [20, 20],
-              iconAnchor: [10, 10],
+              iconSize: [28, 28],
+              iconAnchor: [14, 14],
             })}
           >
             <Tooltip direction="top" offset={[0, -10]} opacity={1}>
@@ -175,7 +170,7 @@ export const LiveMap = ({
           {/* Hotspot Markers */}
           {hotspots.map((h, idx) => {
             const isSelected = selectedZoneIndex === idx;
-            const icon = createHotspotIcon(h, isSelected, idx);
+            const icon = createHotspotIcon(h, isSelected);
 
             return (
               <Marker 

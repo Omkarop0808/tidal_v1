@@ -18,7 +18,7 @@ export default function FieldOps() {
   const [teamName, setTeamName] = useState('SQUAD_02-ALPHA');
   const [collectedKg, setCollectedKg] = useState(120);
   const [remainingKg, setRemainingKg] = useState(25);
-  const [beforeImage] = useState<string>('https://images.unsplash.com/photo-1621451537084-482c73073e0f?auto=format&fit=crop&w=600&grayscale=1');
+  const [beforeImage] = useState<string>('https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?auto=format&fit=crop&w=600&grayscale=1');
   const [afterImage] = useState<string>('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&grayscale=1');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
