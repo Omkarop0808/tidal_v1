@@ -203,7 +203,7 @@ class StoreService:
         UPDATE beaches
         SET cleaned_debris_kg = cleaned_debris_kg + ?,
             remaining_debris_kg = ?,
-            current_debris_kg = remaining_kg,
+            current_debris_kg = ?,
             status = CASE WHEN ? <= 20 THEN 'Cleaned' ELSE 'Partially Cleaned' END,
             baseline_risk = MAX(15.0, baseline_risk * (1.0 - (? / 100.0))),
             last_cleaned_at = ?,

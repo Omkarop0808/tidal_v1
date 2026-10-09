@@ -1,6 +1,4 @@
-import { useEffect, useState } from 'react';
 import { ListOrdered, CheckCircle2, Square } from 'lucide-react';
-import { api } from '../../lib/api';
 
 export interface Hotspot {
   zone_name: string;
@@ -11,55 +9,33 @@ export interface Hotspot {
   estimated_debris_kg: number;
   peak_arrival_hours: number;
   severity: string;
+  top_driver?: string;
+  shap_values?: any;
 }
 
 export const MOCK_HOTSPOTS: Hotspot[] = [
-  { zone_name: 'Versova Creek Outfall', sector: 'North-West', lat: 19.1350, lon: 72.8140, risk_percentage: 94, estimated_debris_kg: 520, peak_arrival_hours: 6, severity: 'Critical' },
-  { zone_name: 'Juhu Beach Shoreline', sector: 'North-West', lat: 19.0970, lon: 72.8258, risk_percentage: 82, estimated_debris_kg: 380, peak_arrival_hours: 12, severity: 'High' },
-  { zone_name: 'Aksa Beach & Dana Pani', sector: 'North-West', lat: 19.1750, lon: 72.7920, risk_percentage: 76, estimated_debris_kg: 290, peak_arrival_hours: 14, severity: 'High' },
-  { zone_name: 'Mahim Bay & Mithi River', sector: 'Central', lat: 19.0350, lon: 72.8350, risk_percentage: 88, estimated_debris_kg: 650, peak_arrival_hours: 8, severity: 'Critical' },
-  { zone_name: 'Bandra Channel & Carter', sector: 'Central', lat: 19.0550, lon: 72.8180, risk_percentage: 61, estimated_debris_kg: 310, peak_arrival_hours: 18, severity: 'Moderate' },
-  { zone_name: 'Worli Sea Face Basin', sector: 'South', lat: 19.0120, lon: 72.8150, risk_percentage: 54, estimated_debris_kg: 230, peak_arrival_hours: 20, severity: 'Moderate' },
-  { zone_name: 'Girgaon Marine Drive Bay', sector: 'South', lat: 18.9550, lon: 72.8120, risk_percentage: 42, estimated_debris_kg: 190, peak_arrival_hours: 24, severity: 'Moderate' },
+  { zone_name: 'Versova Creek Outfall', sector: 'North-West', lat: 19.1350, lon: 72.8140, risk_percentage: 94, estimated_debris_kg: 520, peak_arrival_hours: 6, severity: 'Critical', top_driver: 'Wind Vector (+42.1)' },
+  { zone_name: 'Juhu Beach Shoreline', sector: 'North-West', lat: 19.0970, lon: 72.8258, risk_percentage: 82, estimated_debris_kg: 380, peak_arrival_hours: 12, severity: 'High', top_driver: 'Tidal Surge (+28.4)' },
+  { zone_name: 'Aksa Beach & Dana Pani', sector: 'North-West', lat: 19.1750, lon: 72.7920, risk_percentage: 76, estimated_debris_kg: 290, peak_arrival_hours: 14, severity: 'High', top_driver: 'Current Vel (+21.0)' },
+  { zone_name: 'Mahim Bay & Mithi River', sector: 'Central', lat: 19.0350, lon: 72.8350, risk_percentage: 88, estimated_debris_kg: 650, peak_arrival_hours: 8, severity: 'Critical', top_driver: 'River Outflow (+55.2)' },
+  { zone_name: 'Bandra Channel & Carter', sector: 'Central', lat: 19.0550, lon: 72.8180, risk_percentage: 61, estimated_debris_kg: 310, peak_arrival_hours: 18, severity: 'Moderate', top_driver: 'Wind Vector (+12.1)' },
+  { zone_name: 'Worli Sea Face Basin', sector: 'South', lat: 19.0120, lon: 72.8150, risk_percentage: 54, estimated_debris_kg: 230, peak_arrival_hours: 20, severity: 'Moderate', top_driver: 'Tidal Surge (+8.4)' },
+  { zone_name: 'Girgaon Marine Drive Bay', sector: 'South', lat: 18.9550, lon: 72.8120, risk_percentage: 42, estimated_debris_kg: 190, peak_arrival_hours: 24, severity: 'Moderate', top_driver: 'Current Vel (+5.2)' },
 ];
 
 interface HotspotRankingProps {
+  hotspots?: Hotspot[];
   selectedZoneIndex?: number;
   onSelectZone?: (index: number) => void;
   isFleetDispatched?: boolean;
 }
 
 export const HotspotRanking = ({ 
+  hotspots = MOCK_HOTSPOTS,
   selectedZoneIndex = 0, 
   onSelectZone, 
   isFleetDispatched = false 
 }: HotspotRankingProps) => {
-  const [hotspots, setHotspots] = useState<Hotspot[]>(MOCK_HOTSPOTS);
-
-  useEffect(() => {
-    const fetchHotspots = async () => {
-      try {
-        const data = await api.getHotspots();
-        if (data && data.length > 0) {
-          setHotspots(data);
-        }
-      } catch (error) {
-        setHotspots(MOCK_HOTSPOTS);
-      }
-    };
-    fetchHotspots();
-    
-    const handleCleanup = () => {
-      fetchHotspots();
-    };
-    window.addEventListener('CleanupCompletedEvent', handleCleanup);
-
-    const interval = setInterval(fetchHotspots, 10000);
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('CleanupCompletedEvent', handleCleanup);
-    };
-  }, []);
 
   return (
     <div className="flex flex-col h-full bg-[#050505] min-h-[500px]">
@@ -125,8 +101,8 @@ export const HotspotRanking = ({
                   <span className="text-white text-sm">{hotspot.estimated_debris_kg} KG</span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <span className="text-[#525252]">ETA</span>
-                  <span className="text-[#ff4d00] text-sm">T+{hotspot.peak_arrival_hours}H</span>
+                  <span className="text-[#525252]">DRIVER</span>
+                  <span className="text-[#ff4d00] text-[9px] leading-tight mt-0.5">{hotspot.top_driver || 'WIND SURGE'}</span>
                 </div>
               </div>
               

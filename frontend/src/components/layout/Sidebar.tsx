@@ -5,7 +5,6 @@ import {
   Compass, 
   Recycle, 
   Cpu, 
-  Layers, 
   Radio, 
   ShieldCheck, 
   Waves,
@@ -19,8 +18,7 @@ interface SidebarProps {
 }
 
 const navItems = [
-  { to: '/overview', label: 'Overview', icon: LayoutGrid, tag: 'LIVE' },
-  { to: '/dashboard', label: 'Digital Twin 3D', icon: Layers, tag: '3D' },
+  { to: '/overview', label: 'Digital Twin (Live)', icon: LayoutGrid, tag: 'LIVE' },
   { to: '/simulate', label: 'Simulate Drift', icon: Activity, tag: '72H' },
   { to: '/hotspots', label: 'Tactical Hotspots', icon: Compass, tag: 'AI OPS' },
   { to: '/field-ops', label: 'Field Operations', icon: Navigation, tag: 'MOBILE' },

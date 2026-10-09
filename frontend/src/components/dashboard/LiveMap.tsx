@@ -17,11 +17,24 @@ const ZONE_POSITIONS: Array<{ name: string; sector: string; pos: [number, number
 const BASE_POS: [number, number] = [18.9100, 72.8250];
 
 interface LiveMapProps {
+  hotspots?: any[];
   selectedZoneIndex?: number;
   isFleetDispatched?: boolean;
 }
 
-export const LiveMap = ({ selectedZoneIndex = 0, isFleetDispatched = false }: LiveMapProps) => {
+export const LiveMap = ({ hotspots = [], selectedZoneIndex = 0, isFleetDispatched = false }: LiveMapProps) => {
+  const zonePositions = hotspots.length > 0 ? hotspots.map((h, i) => {
+    const isCritical = h.severity?.toLowerCase() === 'critical';
+    const isCleaned = h.status === 'Cleaned';
+    return {
+      name: `ZONE ${String.fromCharCode(65 + i)}: ${h.zone_name || h.name}`,
+      sector: h.sector || 'UNKNOWN',
+      pos: [h.lat, h.lon] as [number, number],
+      color: isCleaned ? '#525252' : isCritical ? '#ffffff' : '#a3a3a3',
+      fillColor: isCleaned ? '#000000' : isCritical ? '#333333' : '#111111'
+    };
+  }) : ZONE_POSITIONS;
+
   return (
     <div className="flex flex-col h-full bg-[#000000] relative overflow-hidden min-h-[500px]">
       
@@ -60,7 +73,7 @@ export const LiveMap = ({ selectedZoneIndex = 0, isFleetDispatched = false }: Li
             className="map-tiles"
           />
           
-          {ZONE_POSITIONS.map((z, idx) => {
+          {zonePositions.map((z, idx) => {
             const isSelected = selectedZoneIndex === idx;
             const radius = isSelected ? 12 : 8;
 
@@ -92,7 +105,7 @@ export const LiveMap = ({ selectedZoneIndex = 0, isFleetDispatched = false }: Li
             </Tooltip>
           </CircleMarker>
 
-          {ZONE_POSITIONS.slice(0, 4).map((z, idx) => (
+          {zonePositions.slice(0, 4).map((z, idx) => (
             <Polyline 
               key={idx}
               positions={[BASE_POS, z.pos]} 

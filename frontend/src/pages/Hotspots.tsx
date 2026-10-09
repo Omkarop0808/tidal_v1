@@ -23,23 +23,41 @@ const Hotspots = () => {
   const [selectedZoneIndex, setSelectedZoneIndex] = useState(0);
   const [isFleetDispatched, setIsFleetDispatched] = useState(false);
   const [assignments, setAssignments] = useState<any[]>([]);
+  const [hotspots, setHotspots] = useState<any[]>(MOCK_HOTSPOTS);
+
+  const fetchHotspotsData = async () => {
+    try {
+      const data = await api.getHotspots();
+      if (data && data.length > 0) {
+        setHotspots(data);
+        const assigns = await api.optimizeDispatch(data);
+        setAssignments(assigns || []);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const handleRecalculate = async () => {
     setIsRecalculating(true);
-    await api.getHotspots()
-      .then(hotspots => api.optimizeDispatch(hotspots))
-      .then(res => setAssignments(res || []));
+    await fetchHotspotsData();
     setIsRecalculating(false);
   };
 
   useEffect(() => {
-    api.getHotspots()
-      .then(hotspots => api.optimizeDispatch(hotspots))
-      .then(res => setAssignments(res || []))
-      .catch(() => {});
+    fetchHotspotsData();
+    const handleCleanup = () => {
+      fetchHotspotsData();
+    };
+    window.addEventListener('CleanupCompletedEvent', handleCleanup);
+    const interval = setInterval(fetchHotspotsData, 10000);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('CleanupCompletedEvent', handleCleanup);
+    };
   }, []);
 
-  const currentBeach = MOCK_HOTSPOTS[selectedZoneIndex] || MOCK_HOTSPOTS[0];
+  const currentBeach = hotspots[selectedZoneIndex] || hotspots[0];
 
   return (
     <div className="flex flex-col w-full p-4 md:p-8 gap-10 bg-[#000000] text-white min-h-screen font-sans selection:bg-[#ff4d00] selection:text-white">
@@ -111,6 +129,7 @@ const Hotspots = () => {
         {/* We need to pass Brutalist props or the components themselves need to be brutalist. We will update the components next. */}
         <div className="col-span-1 lg:col-span-4 bg-[#000000]">
           <HotspotRanking 
+            hotspots={hotspots}
             selectedZoneIndex={selectedZoneIndex}
             onSelectZone={setSelectedZoneIndex}
             isFleetDispatched={isFleetDispatched}
@@ -118,6 +137,7 @@ const Hotspots = () => {
         </div>
         <div className="col-span-1 lg:col-span-5 bg-[#000000]">
           <LiveMap 
+            hotspots={hotspots}
             selectedZoneIndex={selectedZoneIndex}
             isFleetDispatched={isFleetDispatched}
           />

@@ -8,7 +8,6 @@ import Hotspots from './pages/Hotspots';
 import FieldOps from './pages/FieldOps';
 import CircularRecovery from './pages/CircularRecovery';
 import ModelLab from './pages/ModelLab';
-import { Dashboard } from './pages/Dashboard';
 import OceanGPTWidget from './components/chat/OceanGPTWidget';
 
 function App() {
@@ -28,7 +27,6 @@ function App() {
           <main className="relative pt-16 flex-1 flex flex-col z-0">
             <Routes>
               <Route path="/" element={<Navigate to="/overview" replace />} />
-              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/overview" element={<Overview />} />
               <Route path="/simulate" element={<Simulate />} />
               <Route path="/hotspots" element={<Hotspots />} />
