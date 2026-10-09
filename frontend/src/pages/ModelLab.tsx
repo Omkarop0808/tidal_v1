@@ -8,6 +8,7 @@ import {
   Square
 } from 'lucide-react';
 import AccuracyEvaluator from '../components/analytics/AccuracyEvaluator';
+import { Skeleton } from '../components/layout/Skeleton';
 import { api } from '../lib/api';
 
 export default function ModelLab() {
@@ -157,35 +158,45 @@ export default function ModelLab() {
                 </div>
 
                 <div className="flex flex-col gap-6 w-full">
-                  <div className="flex flex-col gap-2">
-                    <div className="flex justify-between text-[#a3a3a3]">
-                      <span>1. WIND VELOCITY</span>
-                      <span className="text-white">+{shapContribs.wind_speed || 45}%</span>
-                    </div>
-                    <div className="h-4 w-full bg-[#111111] border border-[#333333]">
-                      <div className="h-full bg-white" style={{ width: '45%' }}></div>
-                    </div>
-                  </div>
+                  {!telemetryData ? (
+                    <>
+                      <Skeleton className="h-8 w-full" />
+                      <Skeleton className="h-8 w-full" />
+                      <Skeleton className="h-8 w-full" />
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex justify-between text-[#a3a3a3]">
+                          <span>1. WIND VELOCITY</span>
+                          <span className="text-white">+{shapContribs.wind_speed || 45}%</span>
+                        </div>
+                        <div className="h-4 w-full bg-[#111111] border border-[#333333]">
+                          <div className="h-full bg-white" style={{ width: `${shapContribs.wind_speed || 45}%` }}></div>
+                        </div>
+                      </div>
 
-                  <div className="flex flex-col gap-2">
-                    <div className="flex justify-between text-[#a3a3a3]">
-                      <span>2. PRECIPITATION</span>
-                      <span className="text-[#ff4d00]">+{shapContribs.rainfall_48h || 30}%</span>
-                    </div>
-                    <div className="h-4 w-full bg-[#111111] border border-[#333333]">
-                      <div className="h-full bg-[#ff4d00]" style={{ width: '30%' }}></div>
-                    </div>
-                  </div>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex justify-between text-[#a3a3a3]">
+                          <span>2. PRECIPITATION</span>
+                          <span className="text-[#ff4d00]">+{shapContribs.rainfall_48h || 30}%</span>
+                        </div>
+                        <div className="h-4 w-full bg-[#111111] border border-[#333333]">
+                          <div className="h-full bg-[#ff4d00]" style={{ width: `${shapContribs.rainfall_48h || 30}%` }}></div>
+                        </div>
+                      </div>
 
-                  <div className="flex flex-col gap-2">
-                    <div className="flex justify-between text-[#a3a3a3]">
-                      <span>3. TIDAL VECTOR</span>
-                      <span className="text-[#525252]">+{shapContribs.tide_velocity || 15}%</span>
-                    </div>
-                    <div className="h-4 w-full bg-[#111111] border border-[#333333]">
-                      <div className="h-full bg-[#525252]" style={{ width: '15%' }}></div>
-                    </div>
-                  </div>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex justify-between text-[#a3a3a3]">
+                          <span>3. TIDAL VECTOR</span>
+                          <span className="text-[#525252]">+{shapContribs.tide_velocity || 15}%</span>
+                        </div>
+                        <div className="h-4 w-full bg-[#111111] border border-[#333333]">
+                          <div className="h-full bg-[#525252]" style={{ width: `${shapContribs.tide_velocity || 15}%` }}></div>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

@@ -21,8 +21,8 @@ import {
   Recycle
 } from 'lucide-react';
 import { Scene } from '../components/Map3D/Scene';
+import { runSimulationMiddleware } from '../middleware/simulationMiddleware';
 import { useSim, OUTFALL_LOCATIONS } from '../store';
-import { api } from '../lib/api';
 
 export const Simulate = () => {
   const selectedLocation = useSim(state => state.selectedLocation);
@@ -41,8 +41,6 @@ export const Simulate = () => {
   
   const setSelectedLocation = useSim(state => state.setSelectedLocation);
   const setScenario = useSim(state => state.setScenario);
-  const setTrajectory = useSim(state => state.setTrajectory);
-  const setTrajectoryBaseline = useSim(state => state.setTrajectoryBaseline);
   const setCurrentFrame = useSim(state => state.setCurrentFrame);
   const togglePlay = useSim(state => state.togglePlay);
 
@@ -71,21 +69,13 @@ export const Simulate = () => {
         lon: selectedLocation.lon
       };
       
-      const response = await api.runSimulation(payload);
-      const data = response;
-      
-      if (data.trajectory_intervention) {
-        setTrajectory(data.trajectory_intervention);
-      }
-      if (data.trajectory_baseline) {
-        setTrajectoryBaseline(data.trajectory_baseline);
-      }
+      await runSimulationMiddleware(payload);
     } catch (error) {
       console.error('Simulation run failed:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [windSpeed, precipitation, barrierEfficiency, isBarrierActive, cleanupTeams, setTrajectory, setTrajectoryBaseline, selectedLocation.lat, selectedLocation.lon]);
+  }, [windSpeed, precipitation, barrierEfficiency, isBarrierActive, cleanupTeams, selectedLocation.lat, selectedLocation.lon]);
 
   useEffect(() => {
     if (trajectory.length === 0) {

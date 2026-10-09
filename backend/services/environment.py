@@ -49,3 +49,6 @@ class EnvironmentService:
         return self.cached_data
 
 env_service = EnvironmentService()
+
+def get_env_service():
+    return env_service

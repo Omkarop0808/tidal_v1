@@ -81,10 +81,23 @@ class BeachingRiskModel:
             # Fallback heuristic if untrained
             return max(0, features_dict.get("wind_speed", 10) * 15 + features_dict.get("beached_percent", 5) * 10)
             
+        # --- INPUT VALIDATION ---
+        # Ensure wind speed and other critical features are physically plausible
+        if features_dict.get("wind_speed", 0) < 0:
+            print(f"Warning: Negative wind speed {features_dict.get('wind_speed')}. Clamping to 0.")
+            features_dict["wind_speed"] = 0
+
         df = pd.DataFrame([features_dict])
         df = df.fillna(0)
         # Drop non-feature columns if present
         df = df.drop(columns=["timestamp", "zone_name", "zone_lat", "zone_lon"], errors='ignore')
+        
+        # Ensure all expected model features exist and are correctly ordered
+        if hasattr(self.model, "feature_names_in_"):
+            for col in self.model.feature_names_in_:
+                if col not in df.columns:
+                    df[col] = 0.0
+            df = df[self.model.feature_names_in_]
         
         pred = self.model.predict(df)[0]
         return max(0, float(pred))
@@ -97,6 +110,12 @@ class BeachingRiskModel:
         df = pd.DataFrame([features_dict]).fillna(0).drop(columns=["timestamp", "zone_name", "zone_lat", "zone_lon"], errors='ignore')
         booster = self.model.get_booster()
         
+        if booster and booster.feature_names:
+            for col in booster.feature_names:
+                if col not in df.columns:
+                    df[col] = 0.0
+            df = df[booster.feature_names]
+
         # Predict with pred_contribs=True
         contribs = booster.predict(xgb.DMatrix(df), pred_contribs=True)[0]
         

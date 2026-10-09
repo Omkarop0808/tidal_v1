@@ -12,7 +12,7 @@ from google.genai import types
 
 # ML and Services
 from realtime import manager, live_data_broadcaster
-from services.environment import env_service
+from services.environment import env_service, get_env_service
 from services.drift import drift_engine
 from services.vision import vision_service
 from services.dispatch import dispatch_service

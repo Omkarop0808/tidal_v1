@@ -73,11 +73,34 @@ const createTacticalMarkerIcon = (beach: any, isSelected: boolean) => {
 
 export const IntelligenceMap = ({ onSelectBeach, selectedBeachId }: IntelligenceMapProps) => {
   const [beaches, setBeaches] = useState<any[]>([]);
+  const [trajectories, setTrajectories] = useState<Record<string, [number, number][]>>({});
 
   const fetchBeaches = async () => {
     try {
       const data = await api.getBeaches();
       setBeaches(data);
+      
+      // Fetch predictive drift for high-risk zones
+      const driftPromises = data
+        .filter((b: any) => b.baseline_risk >= 70 || b.status === 'High Risk')
+        .map(async (b: any) => {
+          try {
+            const res = await api.getDriftTrajectory(b.lat, b.lon);
+            const path: [number, number][] = res.trajectory.map((frame: any) => [frame.lat, frame.lon]);
+            return { id: b.id, path };
+          } catch (err) {
+            return null;
+          }
+        });
+        
+      const results = await Promise.all(driftPromises);
+      const trajMap: Record<string, [number, number][]> = {};
+      results.forEach(res => {
+        if (res && res.path.length > 0) {
+          trajMap[res.id] = res.path;
+        }
+      });
+      setTrajectories(trajMap);
     } catch (e) {
       console.error('Failed to fetch beaches for map:', e);
     }
@@ -132,6 +155,19 @@ export const IntelligenceMap = ({ onSelectBeach, selectedBeachId }: Intelligence
               }}
             />
           ))}
+
+        {/* Predictive Drift Vector Paths */}
+        {Object.entries(trajectories).map(([id, path]) => (
+          <Polyline 
+            key={`drift-${id}`}
+            positions={path}
+            pathOptions={{
+              color: '#00e5ff',
+              weight: 3,
+              opacity: 0.6,
+            }}
+          />
+        ))}
 
         {/* Base Port Marker */}
         <Marker 
